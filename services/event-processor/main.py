@@ -85,6 +85,7 @@ async def lifespan(app: FastAPI):
     event_bus.subscribe("user_events", stream_processor.process_event)
     await event_bus.start()
     print("[EventProcessor] Stream processor started. Listening for events...")
+    load_visual_embeddings()
     yield
     await event_bus.stop()
     print("[EventProcessor] Shut down.")
@@ -126,8 +127,26 @@ def get_user_features(user_id: int):
     return profile
 
 
-# ── System Endpoints ────────────────────────────────────────────────
+# ── Multimodal Feature Endpoints ────────────────────────────────────
+visual_embeddings_cache = {}
 
+def load_visual_embeddings():
+    path = "data/multimodal/visual_embeddings.json"
+    if os.path.exists(path):
+        import pandas as pd
+        df = pd.read_json(path, lines=True)
+        for _, row in df.iterrows():
+            visual_embeddings_cache[int(row["item_id"])] = row["visual_embedding"]
+        print(f"[FeatureStore] Loaded {len(visual_embeddings_cache)} visual embeddings.")
+
+@app.get("/features/visual/{item_id}")
+def get_visual_features(item_id: int):
+    """Get the visual embedding vector for a movie."""
+    if item_id in visual_embeddings_cache:
+        return {"item_id": item_id, "visual_embedding": visual_embeddings_cache[item_id]}
+    raise HTTPException(status_code=404, detail="Visual embedding not found")
+
+# ── System Endpoints ────────────────────────────────────────────────
 @app.get("/")
 def health():
     return {

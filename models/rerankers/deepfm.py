@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class DeepFM(nn.Module):
-    def __init__(self, num_users, num_items, embedding_dim=32, hidden_dims=[64, 32]):
+    def __init__(self, num_users, num_items, embedding_dim=32, hidden_dims=[64, 32], visual_dim=64):
         super().__init__()
         
         self.user_emb = nn.Embedding(num_users + 1, embedding_dim)
@@ -14,7 +14,8 @@ class DeepFM(nn.Module):
         self.global_bias = nn.Parameter(torch.zeros(1))
         
         # Deep Component
-        input_dim = embedding_dim * 2
+        # Input dim includes user_emb, item_emb, and visual_dim
+        input_dim = (embedding_dim * 2) + visual_dim
         layers = []
         for hidden_dim in hidden_dims:
             layers.append(nn.Linear(input_dim, hidden_dim))
@@ -24,7 +25,7 @@ class DeepFM(nn.Module):
         layers.append(nn.Linear(input_dim, 1))
         self.deep = nn.Sequential(*layers)
         
-    def forward(self, user_ids, item_ids):
+    def forward(self, user_ids, item_ids, visual_features=None):
         # FM First order
         fm_1st = self.user_bias(user_ids) + self.item_bias(item_ids) + self.global_bias
         
@@ -34,7 +35,11 @@ class DeepFM(nn.Module):
         fm_2nd = (u_e * i_e).sum(dim=1, keepdim=True)
         
         # Deep Component
-        deep_in = torch.cat([u_e, i_e], dim=1)
+        if visual_features is None:
+            # Fallback to zero vectors if no visual features provided
+            visual_features = torch.zeros(user_ids.size(0), 64, device=user_ids.device)
+            
+        deep_in = torch.cat([u_e, i_e, visual_features], dim=1)
         deep_out = self.deep(deep_in)
         
         # Combine

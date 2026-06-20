@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURORA AI - Recommender</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Chat Area -->
+        <aside class="chat-sidebar glass-panel">
+            <div class="brand">
+                <div class="logo"></div>
+                <h1>AURORA <span>AI</span></h1>
+            </div>
+            
+            <div class="chat-history" id="chat-history">
+                <div class="message system-msg">
+                    Welcome to AURORA AI. I am your Orchestrator Agent. Try asking: <br><br>
+                    ✨ <i>"Recommend me some action movies"</i><br>
+                    🔥 <i>"What's trending right now?"</i><br>
+                    🧠 <i>"Why did you recommend that?"</i>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Ask for a recommendation..." autocomplete="off">
+                <button id="send-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area / Grid -->
+        <main class="content-area">
+            <header>
+                <h2>Discover</h2>
+                <div class="user-profile">
+                    User #<input type="number" id="user-id-input" value="32" min="1" max="943">
+                </div>
+            </header>
+            
+            <div class="grid-container" id="movie-grid">
+                <!-- Movie cards will be injected here via JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
