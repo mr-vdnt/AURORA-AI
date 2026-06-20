@@ -1,74 +1,142 @@
-# AURORA AI
+<div align="center">
+  <h1>AURORA AI 🌌</h1>
+  <p><strong>Enterprise-Scale Real-Time Recommendation & Intelligence Platform</strong></p>
+  <p><em>Unified Recommendations, Retrieval Intelligence, Agentic Personalization, and Real-Time Ranking at Planet Scale.</em></p>
+</div>
 
-**Enterprise-Scale Real-Time Recommendation Intelligence Platform**
+---
 
-*Tagline: "Unified Recommendations, Retrieval Intelligence, Agentic Personalization, and Real-Time Ranking at Planet Scale."*
+## 🚀 Overview
 
-AURORA AI is a production-grade Recommendation + Retrieval + Agentic Decisioning Platform. It combines real-time recommendation systems, enterprise RAG, knowledge graph intelligence, agentic AI, multimodal understanding, and online learning into a single enterprise ecosystem.
+**AURORA AI** is a flagship MLOps and Machine Learning portfolio project designed to demonstrate enterprise-grade capabilities mirroring the architecture of modern AI platforms like Netflix, Spotify, Amazon, and TikTok.
 
-## Architecture & Phased Roadmap
+Rather than just another "simple collaborative filtering script," AURORA AI implements a full-scale **Multi-Stage Recommender System** integrated with **Real-Time Event Streaming**, an in-memory **Feature Store**, and **MLflow** for experiment tracking.
 
-This project is built iteratively through the following phases:
+## 🏗 Architecture
 
-1. **Phase 1: MVP (Minimum Viable Product)**
-   - Foundational architecture
-   - Mock data generation
-   - Local FAISS vector database
-   - Simple FastAPI backend serving content-based recommendations
-2. **Phase 2: Production Recommender**
-   - Deep Learning & Matrix Factorization
-   - Multi-stage ranking
-3. **Phase 3: Real-Time Platform**
-   - Kafka and Stream Processing
-   - Feature Store integration
-4. **Phase 4: Enterprise RAG & Graph Intelligence**
-   - Document ingestion and GraphRAG (Neo4j)
-5. **Phase 5: Agentic Intelligence**
-   - Planner, Retriever, Summarizer agents
-6. **Phase 6: Multimodal AI & Autonomous Optimization**
+The platform architecture is divided into decoupled microservices, handling both offline model training and real-time online inference:
 
-## Getting Started (Phase 1 MVP)
+```mermaid
+graph TD
+    User([User Client]) --> |Search Query| RecService(Rec Service: 8000)
+    User --> |Get Recommendations| RankService(Ranking Service: 8001)
+    User --> |View/Click/Buy| EventService(Event Processor: 8002)
+
+    subgraph "Real-Time Pipeline (Phase 3)"
+        EventService --> |Publish| EventBus[(Kafka-like Event Bus)]
+        EventBus --> |Consume| StreamProcessor[Stream Processor]
+        StreamProcessor --> |Update Profile| FeatureStore[(Redis Feature Store)]
+    end
+
+    subgraph "Offline / ML Training (Phase 2)"
+        RecService --> |Semantic Search| TextFAISS[(Text FAISS)]
+        RankService --> |Top 50 Candidates| TT[Two-Tower Retrieval + Item FAISS]
+        RankService --> |Top 10 Ranked| DeepFM[DeepFM Neural Ranker]
+    end
+
+    RankService -.-> |Fetch Real-Time Boosts| FeatureStore
+```
+
+## ✨ Core Features
+
+### 1. Two-Tower Neural Retrieval (PyTorch)
+- **Architecture**: Separate User and Item embedding towers combined via dot product.
+- **Speed**: Candidate generation goes from 100k items to the Top 50 in milliseconds using a **FAISS** (Facebook AI Similarity Search) index.
+
+### 2. DeepFM Neural Re-Ranking (PyTorch)
+- **Architecture**: Factorization Machine (1st + 2nd order feature interactions) combined with a Deep Neural Network.
+- **Precision**: Takes the 50 candidates from the retrieval stage and re-ranks them based on deep nonlinear patterns, achieving an **NDCG@10 of 0.77+** on the MovieLens 100k dataset.
+
+### 3. Real-Time Event Processing & Feature Store
+- **Streaming**: A unified event processor with an `asyncio`-backed Event Bus mimicking Apache Kafka topics.
+- **Stateful Features**: Background stream processors aggregate views, clicks, and purchases in real-time, decaying genre interests, and penalizing recently viewed items using a **Redis** Feature Store.
+- **Dynamic Ranking Integration**: The Ranking API fetches real-time profiles from Redis on every request to dynamically boost scores based on the user's *current* session context.
+
+### 4. Enterprise MLOps
+- Full model tracking, loss curves, and artifact registration via **MLflow**.
+- Automated event simulators to stress-test the real-time pipelines.
+
+---
+
+## 🛠 Tech Stack
+
+- **Machine Learning**: PyTorch, FAISS, Sentence-Transformers, pandas, numpy
+- **Backend & Services**: FastAPI, Uvicorn, asyncio, pydantic
+- **Data & State**: Redis (`fakeredis` for local dev), MovieLens 100k Dataset
+- **MLOps**: MLflow (SQLite backend)
+
+---
+
+## 💻 Getting Started
 
 ### Prerequisites
 - Python 3.10+
 
-### Setup
+### Installation
 
-1. **Create and activate a virtual environment:**
+1. **Clone & Setup Environment**
    ```bash
+   git clone https://github.com/mr-vdnt/AURORA-AI.git
+   cd AURORA-AI
    python -m venv venv
    source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-   ```
-
-2. **Install dependencies:**
-   ```bash
    pip install -r requirements.txt
    ```
 
-3. **Generate mock data:**
+2. **Download MovieLens Data**
    ```bash
-   python pipelines/ingestion/mock_data.py
+   python pipelines/ingestion/movielens.py
    ```
 
-4. **Build the Vector Index (FAISS):**
+3. **Train Offline Models**
    ```bash
-   python pipelines/training/build_vector_index.py
+   # Train Two-Tower Retrieval Model and export to FAISS
+   python pipelines/training/train_two_tower.py
+   
+   # Train DeepFM Ranker
+   python pipelines/training/train_deepfm.py
    ```
-   *Note: This step downloads the `all-MiniLM-L6-v2` SentenceTransformer model (approx. 90MB) locally.*
+   *(Track training progress locally via MLflow by running `mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db`)*
 
-5. **Run the Recommendation Service:**
+### Running the Platform
+
+To run the full decoupled microservices ecosystem:
+
+1. **Start the Real-Time Event Processor & Feature Store (Port 8002)**
    ```bash
-   uvicorn services.recommendation.main:app --reload
+   uvicorn services.event-processor.main:app --host 127.0.0.1 --port 8002
    ```
 
-### API Usage
+2. **Start the Multi-Stage Ranking API (Port 8001)**
+   ```bash
+   uvicorn services.ranking.main:app --host 127.0.0.1 --port 8001
+   ```
 
-You can access the interactive API docs at: `http://localhost:8000/docs`
+3. **Simulate Real-Time Traffic**
+   In a new terminal, simulate 500+ live user events hitting the platform to build up real-time Redis profiles:
+   ```bash
+   python pipelines/ingestion/event_simulator.py --url http://127.0.0.1:8002 --events 500 --users 50
+   ```
 
-Example Request to `/recommend`:
-```json
-{
-  "query": "I want a space adventure with AI",
-  "top_k": 3
-}
-```
+4. **Test the Dynamic Ranking**
+   Fetch personalized recommendations for User 32. Watch the Ranker dynamically adjust scores based on the real-time events just processed!
+   ```bash
+   curl -X 'POST' \
+     'http://127.0.0.1:8001/rank' \
+     -H 'Content-Type: application/json' \
+     -d '{
+     "user_id": 32,
+     "top_k_retrieval": 50,
+     "top_k_final": 5
+   }'
+   ```
+
+---
+
+## 🗺 Roadmap
+
+- [x] **Phase 1**: MVP, Mock Data, Content-Based Semantic Search
+- [x] **Phase 2**: Production Recommender (Two-Tower Retrieval, DeepFM Ranking, FAISS, MLflow)
+- [x] **Phase 3**: Real-Time Platform (Event Bus, Stream Processing, Redis Feature Store)
+- [ ] **Phase 4**: Enterprise RAG & Graph Intelligence (Neo4j, Document ingestion)
+- [ ] **Phase 5**: Agentic Intelligence (Planner, Retriever, Summarizer agents)
