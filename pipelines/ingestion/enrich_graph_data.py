@@ -23,14 +23,14 @@ def enrich_data():
 
     movies_df = pd.read_csv(movies_path)
     
-    # Generate mock actors (pool of 500)
+    # Generate mock actors (pool of 5000)
     print("Generating mock actors...")
-    actor_pool = [{"actor_id": i, "name": faker.name()} for i in range(1, 501)]
+    actor_pool = [{"actor_id": i, "name": faker.name()} for i in range(1, 5001)]
     actors_df = pd.DataFrame(actor_pool)
     
-    # Generate mock directors (pool of 200)
+    # Generate mock directors (pool of 2000)
     print("Generating mock directors...")
-    director_pool = [{"director_id": i, "name": faker.name()} for i in range(1, 201)]
+    director_pool = [{"director_id": i, "name": faker.name()} for i in range(1, 2001)]
     directors_df = pd.DataFrame(director_pool)
     
     # Create relationships
