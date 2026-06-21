@@ -17,9 +17,10 @@ class LLMProvider(ABC):
 
 class LocalFlanLLM(LLMProvider):
     def __init__(self, model_name="google/flan-t5-small"):
-        print(f"Loading local LLM ({model_name})...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        print("Loading local LLM (Mock due to Render 512MB RAM limit)...")
+        # Removed transformers load to save 350MB of RAM
+        self.tokenizer = None
+        self.model = None
         print("LLM loaded.")
         
     def generate_rich_metadata(self, item_id: int, title: str, explanation: str, score: float) -> dict:
@@ -77,21 +78,20 @@ class LocalFlanLLM(LLMProvider):
 
     def generate_explanation(self, user_context: str, movie_title: str, graph_path: list[str]) -> str:
         if not graph_path:
-            prompt = (
-                f"A user enjoys {user_context}. We recommended '{movie_title}'. "
-                f"Explain why this movie is a great fit in exactly 30 words. Mention shared themes. Do not use generic phrases."
+            return (
+                f"Recommended because '{movie_title}' shares the same engaging storytelling, "
+                f"memorable characters, and high-quality production found in your favorite {user_context} movies. "
+                "It perfectly matches your cinematic tastes."
             )
         else:
-            path_str = ", ".join(graph_path)
-            prompt = (
-                f"A user likes {user_context}. We recommended '{movie_title}'. "
-                f"The connection is: {path_str}. "
-                f"Explain this recommendation in exactly 30 words. Sound intelligent and personalized."
+            # Create a more dynamic string based on the graph path
+            connection = str(graph_path[-1] if len(graph_path) > 0 else "similar themes")
+            connection_clean = connection.replace("Movie:", "").replace("_", " ")
+            return (
+                f"Recommended because it shares the same emotional storytelling, engaging themes, "
+                f"and powerful visuals found in {connection_clean}. Both films combine memorable "
+                f"characters and impactful narratives that resonate strongly with {user_context} audiences."
             )
-            
-        inputs = self.tokenizer(prompt, return_tensors="pt")
-        outputs = self.model.generate(**inputs, max_length=80, min_length=20)
-        return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
 # Singleton instance
