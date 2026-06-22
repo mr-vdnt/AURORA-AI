@@ -1,6 +1,5 @@
 import os
 import sys
-import torch
 import numpy as np
 import pandas as pd
 import faiss
@@ -9,8 +8,6 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from models.collaborative.two_tower import TwoTowerModel
-from models.rerankers.deepfm import DeepFM
 
 app = FastAPI(title="AURORA AI - Multi-Stage Ranking Service")
 
@@ -30,10 +27,11 @@ class RankedItem(BaseModel):
 
 
 # ── Global state ────────────────────────────────────────────────────
-two_tower: TwoTowerModel | None = None
-deepfm: DeepFM | None = None
-deepfm_optimizer: torch.optim.Optimizer | None = None
-deepfm_loss_fn = torch.nn.BCEWithLogitsLoss()
+# DeepFM and PyTorch removed to save 150MB RAM on Render
+two_tower = None
+deepfm = None
+deepfm_optimizer = None
+deepfm_loss_fn = None
 faiss_index: faiss.Index | None = None
 movies_df: pd.DataFrame | None = None
 num_users: int = 0
@@ -64,17 +62,7 @@ async def startup_event():
         print("  [MISSING] Semantic FAISS index not found - retrieval disabled")
 
     # ── DeepFM (re-ranking) ─────────────────────────────────────────
-    dfm_weights = "models/rerankers/deepfm_weights.pth"
-    if os.path.exists(dfm_weights):
-        deepfm = DeepFM(num_users=num_users, num_items=num_items, embedding_dim=32, hidden_dims=[64, 32], visual_dim=64)
-        deepfm.load_state_dict(torch.load(dfm_weights, map_location="cpu", weights_only=True))
-        deepfm.eval()
-        
-        # Initialize Optimizer for Online Learning
-        deepfm_optimizer = torch.optim.Adam(deepfm.parameters(), lr=0.005)
-        print("  [OK] DeepFM ranker loaded with Online Learning Optimizer")
-    else:
-        print("  [MISSING] DeepFM weights not found - ranking disabled")
+    print("  [OK] DeepFM disabled to save 150MB RAM on Render")
 
     # ── Movie metadata ──────────────────────────────────────────────
     if os.path.exists("data/raw/movies.csv"):
@@ -196,24 +184,8 @@ def rank(request: RankRequest):
         retrieval_scores = [1.0] * len(candidate_ids)
 
     # ── Stage 2: Re-ranking with DeepFM ─────────────────────────────
-    with torch.no_grad():
-        u_tensor = torch.tensor([request.user_id] * len(candidate_ids), dtype=torch.long)
-        i_tensor = torch.tensor(candidate_ids, dtype=torch.long)
-        
-        # Fetch Multimodal Visual Features for candidates
-        visual_features = []
-        for cid in candidate_ids:
-            try:
-                resp = requests.get(f"http://127.0.0.1:8002/features/visual/{cid}", timeout=0.5)
-                if resp.status_code == 200:
-                    visual_features.append(resp.json()["visual_embedding"])
-                else:
-                    visual_features.append([0.0] * 64)
-            except Exception:
-                visual_features.append([0.0] * 64)
-                
-        v_tensor = torch.tensor(visual_features, dtype=torch.float32)
-        rank_scores = deepfm(u_tensor, i_tensor, v_tensor).numpy().tolist()
+    # DeepFM removed to save RAM on Render. We use inverted FAISS distances.
+    rank_scores = [1.0 / (1.0 + d) for d in retrieval_scores]
 
 
     # Build results and sort by ranking score (higher = better)
@@ -261,41 +233,9 @@ def process_feedback(event: FeedbackEvent):
     Perform a real-time online learning update (one gradient step)
     on the DeepFM model based on a single user interaction event.
     """
-    if deepfm is None or deepfm_optimizer is None:
-        raise HTTPException(status_code=503, detail="Model or Optimizer not loaded.")
-        
-    deepfm.train() # Switch to training mode
-    deepfm_optimizer.zero_grad()
-    
-    u_tensor = torch.tensor([event.user_id], dtype=torch.long)
-    i_tensor = torch.tensor([event.item_id], dtype=torch.long)
-    
-    # Fetch Visual Embedding
-    try:
-        resp = requests.get(f"http://127.0.0.1:8002/features/visual/{event.item_id}", timeout=0.5)
-        if resp.status_code == 200:
-            v_vec = resp.json()["visual_embedding"]
-            v_tensor = torch.tensor([v_vec], dtype=torch.float32)
-        else:
-            v_tensor = torch.zeros(1, 64)
-    except Exception:
-        v_tensor = torch.zeros(1, 64)
-        
-    # Forward Pass
-    pred = deepfm(u_tensor, i_tensor, v_tensor)
-    
-    # Calculate BCE Loss
-    target = torch.tensor([event.label], dtype=torch.float32)
-    loss = deepfm_loss_fn(pred, target)
-    
-    # Backward Pass & Optimize!
-    loss.backward()
-    deepfm_optimizer.step()
-    
-    deepfm.eval() # Switch back to eval mode
-    
+    # Removed PyTorch online learning to save 150MB RAM on Render
     return {
         "status": "success", 
-        "updated_weights": True,
-        "loss": float(loss.item())
+        "updated_weights": False,
+        "loss": 0.0
     }

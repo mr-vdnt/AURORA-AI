@@ -3,13 +3,11 @@ AURORA AI - Agent Core Logic
 
 Uses NLP to classify user intent and route to the correct tool.
 """
-from transformers import pipeline
 import re
 from services.agent.tools import get_recommendations, get_explanation, get_trending, search_movie_by_title, get_similar_movies, get_similarity_explanation
 
 import os
 import pandas as pd
-from transformers import pipeline
 import re
 from services.agent.tools import get_recommendations, get_explanation, get_trending, search_movie_by_title, get_similar_movies, get_similarity_explanation
 
@@ -34,12 +32,7 @@ def _get_movie_metadata(row):
 
 class OrchestratorAgent:
     def __init__(self):
-        print("Loading Agent Intent Classifier...")
-        # Using a small distilbert model for fast CPU zero-shot classification
-        self.classifier = pipeline(
-            "zero-shot-classification", 
-            model="typeform/distilbert-base-uncased-mnli"
-        )
+        print("Loading Agent Intent Classifier (Mock rules to save 250MB RAM)...")
         self.intents = ["recommendation", "explanation", "trending", "similar_movies", "genre_search"]
         print("Agent ready.")
         
@@ -57,8 +50,7 @@ class OrchestratorAgent:
         return " ".join(title_words) if title_words else "Toy Story"
 
     def process_query(self, user_id: int, query: str) -> dict:
-        result = self.classifier(query, candidate_labels=self.intents)
-        top_intent = result["labels"][0]
+        top_intent = "recommendation" # Default
         
         # Heuristic overrides for better accuracy
         lower_q = query.lower()
