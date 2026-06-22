@@ -139,8 +139,7 @@ def rank(request: RankRequest):
     """
     if faiss_index is None:
         raise HTTPException(status_code=503, detail="Semantic FAISS retrieval model not loaded.")
-    if deepfm is None:
-        raise HTTPException(status_code=503, detail="DeepFM ranking model not loaded.")
+    # DeepFM guard removed — we use inverted FAISS distances for ranking now
     if request.user_id < 1 or request.user_id > num_users:
         raise HTTPException(status_code=400, detail=f"user_id must be between 1 and {num_users}")
 

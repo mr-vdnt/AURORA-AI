@@ -3,13 +3,10 @@ AURORA AI - Agent Core Logic
 
 Uses NLP to classify user intent and route to the correct tool.
 """
-import re
-from services.agent.tools import get_recommendations, get_explanation, get_trending, search_movie_by_title, get_similar_movies, get_similarity_explanation
-
 import os
-import pandas as pd
 import re
-from services.agent.tools import get_recommendations, get_explanation, get_trending, search_movie_by_title, get_similar_movies, get_similarity_explanation
+import pandas as pd
+from services.agent.tools import get_recommendations, get_explanation, get_trending, search_movie_by_title, get_similar_movies
 
 # Load movies DB once globally
 movies_df = None
@@ -122,19 +119,16 @@ class OrchestratorAgent:
                 if sim_resp["status"] == "success":
                     similar_items = sim_resp["data"]
                     for item in similar_items:
-                        exp_resp = get_similarity_explanation(source_id, item["item_id"])
-                        if exp_resp["status"] == "success":
-                            item["explanation"] = exp_resp["data"]["explanation"]
-                            item["rich_metadata"] = exp_resp["data"].get("rich_metadata", {})
-                        else:
-                            item["explanation"] = "Similar based on user viewing patterns."
-                            item["rich_metadata"] = {}
+                        # Enrich locally — no Graph RAG call (port 8003 doesn't exist on Render)
+                        item["explanation"] = f"Similar to {source_title} based on shared themes and genre DNA."
+                        item["rich_metadata"] = {}
                         
-                        # Add poster if available in df
+                        # Add poster + metadata if available in df
                         if movies_df is not None:
                             row = movies_df[movies_df['item_id'] == item['item_id']]
                             if not row.empty:
                                 item["poster_url"] = row.iloc[0].get('poster_url', '')
+                                item["rich_metadata"] = _get_movie_metadata(row.iloc[0])
                                 
                     response_data = similar_items
                 else:
