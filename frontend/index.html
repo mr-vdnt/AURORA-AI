@@ -3,63 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURORA AI - Recommender</title>
+    <title>AURORA — AI-Powered Cinematic Discovery</title>
+    <meta name="description" content="AURORA is an intelligent cinematic discovery platform. Find your next favorite movie with AI-powered recommendations.">
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar / Chat Area -->
-        <aside class="chat-sidebar glass-panel">
-            <div class="brand">
-                <div class="logo"></div>
-                <h1>AURORA <span>AI</span></h1>
+    <!-- Navigation Bar -->
+    <nav class="aurora-nav" id="aurora-nav">
+        <div class="aurora-nav__left">
+            <a href="/" class="aurora-nav__logo">AURORA</a>
+            <div class="aurora-nav__links">
+                <a href="#" class="active">Home</a>
+                <a href="#">Movies</a>
+                <a href="#">TV Series</a>
+                <a href="#">Trending</a>
+                <a href="#">My List</a>
             </div>
-            
-            <div class="chat-history" id="chat-history">
-                <div class="message system-msg">
-                    Welcome to AURORA AI. I am your Orchestrator Agent. Try asking: <br><br>
-                    ✨ <i>"Recommend me some action movies"</i><br>
-                    🔥 <i>"What's trending right now?"</i><br>
-                    🧠 <i>"Why did you recommend that?"</i>
-                </div>
+        </div>
+        <div class="aurora-nav__right">
+            <button class="aurora-nav__search-trigger" id="search-trigger" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <button class="aurora-nav__ai-trigger" id="ai-trigger" aria-label="AI Assistant" title="Aurora AI Assistant">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+            </button>
+            <div class="aurora-nav__user-group">
+                <span style="color:#B3B3B3;font-size:0.8rem;">User</span>
+                <input type="number" id="user-id-input" value="32" min="1" max="943" aria-label="User ID">
             </div>
+        </div>
+    </nav>
 
-            <div class="chat-input-container" style="position: relative;">
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Ask for a recommendation..." autocomplete="off">
-                    <button id="send-btn">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </div>
-                <div id="autocomplete-dropdown" class="autocomplete-dropdown" style="display: none;"></div>
-            </div>
-        </aside>
-
-        <!-- Main Content Area / Feed -->
-        <main class="content-area">
-            <header>
-                <h2>Discover</h2>
-                <div class="user-profile">
-                    User #<input type="number" id="user-id-input" value="32" min="1" max="943">
-                </div>
-            </header>
-
-            <div id="empty-search-state" class="empty-state">
-                <!-- Curated categories injected via JS -->
-            </div>
-            
-            <div class="feed-container" id="movie-grid" style="display: none;">
-                <!-- Movie cards will be injected here via JS -->
-            </div>
-        </main>
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay" style="display:none;">
+        <input type="text" class="search-overlay__input" id="search-input" placeholder="Search movies, genres, actors..." autocomplete="off">
+        <div class="search-overlay__results" id="search-results"></div>
     </div>
 
-    <!-- Cinematic Detail Modal -->
-    <div id="movie-detail-modal" class="modal-overlay" style="display: none;">
+    <!-- AI Chat Panel (slides in from right) -->
+    <aside class="ai-panel" id="ai-panel">
+        <div class="ai-panel__header">
+            <h3>✦ Aurora AI</h3>
+            <button class="ai-panel__close" id="ai-panel-close" aria-label="Close AI panel">✕</button>
+        </div>
+        <div class="ai-panel__messages" id="chat-history">
+            <div class="ai-message ai-message--system">
+                Welcome to Aurora AI. I'll help you discover your next favorite movie. Try asking:<br><br>
+                ✨ <i>"Recommend mind-bending sci-fi"</i><br>
+                🔥 <i>"What's trending right now?"</i><br>
+                🎬 <i>"Movies similar to Interstellar"</i>
+            </div>
+        </div>
+        <div class="ai-panel__input" style="position:relative;">
+            <div id="autocomplete-dropdown" class="ai-panel__autocomplete" style="display:none;"></div>
+            <input type="text" id="chat-input" placeholder="Ask Aurora anything..." autocomplete="off">
+            <button id="send-btn" aria-label="Send message">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="aurora-main" id="aurora-main">
+        <!-- Hero Section (injected by JS) -->
+        <section class="hero" id="hero-section" style="display:none;"></section>
+
+        <!-- Empty State (shown on first load) -->
+        <div id="empty-state" class="empty-state">
+            <h2>What would you like to watch?</h2>
+            <p>Explore curated categories or ask Aurora AI for personalized recommendations.</p>
+            <div class="empty-state__categories" id="category-pills"></div>
+        </div>
+
+        <!-- Dynamic Content Rows (injected by JS) -->
+        <div id="content-rows"></div>
+    </main>
+
+    <!-- Movie Detail Modal -->
+    <div id="movie-detail-modal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
-            <button class="close-modal-btn" id="close-modal-btn">&times;</button>
+            <button class="modal-close" id="close-modal-btn" aria-label="Close">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>
