@@ -72,7 +72,12 @@ class OrchestratorAgent:
         if top_intent == "genre_search":
             if movies_df is not None:
                 # Find matching genres or tags
-                matched = movies_df[movies_df['genres'].str.contains(lower_q.replace(" movies", ""), case=False, na=False) | movies_df['overview'].str.contains(lower_q.replace(" movies", ""), case=False, na=False)]
+                genres_list = ["horror", "comedy", "action", "thriller", "drama", "anime", "k-drama", "bollywood", "romance", "psychological", "family"]
+                detected_genre = next((g for g in genres_list if g in lower_q), None)
+                if not detected_genre:
+                    detected_genre = lower_q.replace(" movies", "").replace(" films", "").replace(" show ", "").strip()
+                    
+                matched = movies_df[movies_df['genres'].str.contains(detected_genre, case=False, na=False) | movies_df['overview'].str.contains(detected_genre, case=False, na=False)]
                 response_data = []
                 for _, row in matched.head(20).iterrows():
                     response_data.append({

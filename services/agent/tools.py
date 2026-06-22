@@ -11,7 +11,7 @@ def get_recommendations(user_id: int) -> dict:
     print(f"Agent Tool: Fetching recommendations for User {user_id}")
     try:
         req = {"user_id": user_id, "top_k": 5}
-        resp = requests.post("http://127.0.0.1:8001/rank", json=req, timeout=5)
+        resp = requests.post("http://127.0.0.1:8001/rank", json=req, timeout=15)
         if resp.status_code == 200:
             return {"status": "success", "data": resp.json()}
         return {"status": "error", "message": f"Ranking API returned {resp.status_code}"}
@@ -64,7 +64,7 @@ def get_similar_movies(item_id: int) -> dict:
     print(f"Agent Tool: Fetching similar movies for Item {item_id}")
     try:
         req = {"item_id": item_id, "top_k": 20}
-        resp = requests.post("http://127.0.0.1:8001/similar", json=req, timeout=5)
+        resp = requests.post("http://127.0.0.1:8001/similar", json=req, timeout=15)
         if resp.status_code == 200:
             return {"status": "success", "data": resp.json()}
         return {"status": "error", "message": f"Ranking API returned {resp.status_code}"}
