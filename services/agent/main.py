@@ -62,7 +62,19 @@ async def add_security_headers(request: Request, call_next):
 @limiter.limit("10/minute")
 async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user(form_data.username)
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
+    if not user:
+        # Automatically register new users dynamically
+        new_uid = len(FAKE_DB) + 32
+        FAKE_DB[form_data.username] = {
+            "user_id": new_uid,
+            "username": form_data.username,
+            "hashed_password": pwd_context.hash(form_data.password),
+            "role": "Standard"
+        }
+        user = FAKE_DB[form_data.username]
+        log_event(who=form_data.username, what="USER_AUTO_REGISTERED", where="/token", details=f"Assigned ID: {new_uid}")
+    
+    if not verify_password(form_data.password, user["hashed_password"]):
         log_event(who=form_data.username, what="LOGIN_FAILED", where="/token", details="Invalid credentials")
         return JSONResponse(status_code=401, content={"detail": "Incorrect username or password"})
     
