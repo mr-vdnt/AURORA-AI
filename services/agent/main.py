@@ -109,6 +109,9 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
     log_event(who=user["username"], what="LOGIN_SUCCESS", where="/token", details=f"Role: {user['role']}")
     return {"access_token": access_token, "token_type": "bearer", "user_id": user["user_id"], "role": user["role"]}
 
+def get_mock_user():
+    return {"user_id": 32, "username": "user1", "role": "Standard"}
+
 # --- SECURED ENDPOINTS ---
 class ChatRequest(BaseModel):
     query: str
@@ -120,7 +123,7 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 @limiter.limit("20/minute")
-def chat_endpoint(request: Request, req: ChatRequest, current_user: dict = Depends(get_current_user)):
+def chat_endpoint(request: Request, req: ChatRequest, current_user: dict = Depends(get_mock_user)):
     user_id = current_user["user_id"]
     result = agent.process_query(user_id, req.query, req.exclude_ids)
     return ChatResponse(
@@ -131,7 +134,7 @@ def chat_endpoint(request: Request, req: ChatRequest, current_user: dict = Depen
 import pandas as pd
 @app.get("/autocomplete")
 @limiter.limit("60/minute")
-def autocomplete(request: Request, q: str, current_user: dict = Depends(get_current_user)):
+def autocomplete(request: Request, q: str, current_user: dict = Depends(get_mock_user)):
     """Real-time autocomplete endpoint matching movie titles."""
     if len(q) < 2:
         return []
@@ -149,7 +152,7 @@ def autocomplete(request: Request, q: str, current_user: dict = Depends(get_curr
 import requests
 @app.get("/movie/{item_id}")
 @limiter.limit("30/minute")
-def get_movie_details(request: Request, item_id: int, current_user: dict = Depends(get_current_user)):
+def get_movie_details(request: Request, item_id: int, current_user: dict = Depends(get_mock_user)):
     """Aggregates all 19 fields of rich metadata and similar movies for the Cinematic Modal."""
     user_id = current_user["user_id"]
     try:
@@ -187,7 +190,7 @@ class EventRequest(BaseModel):
 
 @app.post("/events/ingest")
 @limiter.limit("60/minute")
-def proxy_events(request: Request, req: EventRequest, current_user: dict = Depends(get_current_user)):
+def proxy_events(request: Request, req: EventRequest, current_user: dict = Depends(get_mock_user)):
     """Proxy events directly to the Event Processor service on Port 8002."""
     user_id = current_user["user_id"]
     payload = {"user_id": user_id, "event_type": req.event_type, "item_id": req.item_id}

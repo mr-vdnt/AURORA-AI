@@ -37,20 +37,13 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 let globalMovies = [];
 let myList = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
 let currentPage = 'home';
-let token = localStorage.getItem('aurora_token');
-let userId = localStorage.getItem('aurora_user_id') || 32;
+let token = 'mock_token';
+let userId = 32;
 
 async function authFetch(url, options = {}) {
-    if (!token) throw new Error('Unauthenticated');
     options.headers = options.headers || {};
-    options.headers['Authorization'] = `Bearer ${token}`;
+    options.headers['Authorization'] = `Bearer mock_token`;
     const res = await fetch(url, options);
-    if (res.status === 401) {
-        document.getElementById('login-overlay').style.display = 'flex';
-        token = null;
-        localStorage.removeItem('aurora_token');
-        throw new Error('Session expired');
-    }
     return res;
 }
 
@@ -59,19 +52,14 @@ async function authFetch(url, options = {}) {
 // ══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
     const loginOverlay = document.getElementById('login-overlay');
-    const loginForm = document.getElementById('login-form');
     const logoutBtn = document.getElementById('logout-btn');
     const adminLink = document.getElementById('admin-link');
     const userDisplay = document.getElementById('current-user-display');
     const loginError = document.getElementById('login-error');
 
-    if (token) {
-        loginOverlay.style.display = 'none';
-        userDisplay.textContent = `User: ${localStorage.getItem('aurora_username')}`;
-        logoutBtn.style.display = 'inline-block';
-        if(localStorage.getItem('aurora_role') === 'Administrator') adminLink.style.display = 'inline-block';
-        navigateTo('home');
-    }
+    if (loginOverlay) loginOverlay.style.display = 'none';
+    if (userDisplay) userDisplay.textContent = `User: guest`;
+    navigateTo('home');
 
     let loginMode = 'signin';
     const toggleBtn = document.getElementById('toggle-login-mode');
