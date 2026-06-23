@@ -37,27 +37,145 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 let globalMovies = [];
 let myList = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
 let currentPage = 'home';
+let token = localStorage.getItem('aurora_token');
+let userId = localStorage.getItem('aurora_user_id') || 32;
+
+async function authFetch(url, options = {}) {
+    if (!token) throw new Error('Unauthenticated');
+    options.headers = options.headers || {};
+    options.headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+        document.getElementById('login-overlay').style.display = 'flex';
+        token = null;
+        localStorage.removeItem('aurora_token');
+        throw new Error('Session expired');
+    }
+    return res;
+}
 
 // ══════════════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-    navigateTo('home');
-});
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const adminLink = document.getElementById('admin-link');
+    const userDisplay = document.getElementById('current-user-display');
+    const loginError = document.getElementById('login-error');
 
-// ══════════════════════════════════════════════════════════════════════
-//  SIDEBAR
-// ══════════════════════════════════════════════════════════════════════
-sidebarToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('expanded');
-});
+    if (token) {
+        loginOverlay.style.display = 'none';
+        userDisplay.textContent = `User: ${localStorage.getItem('aurora_username')}`;
+        logoutBtn.style.display = 'inline-block';
+        if(localStorage.getItem('aurora_role') === 'Administrator') adminLink.style.display = 'inline-block';
+        navigateTo('home');
+    }
 
-// Close sidebar on mobile when clicking outside
-document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {
-        if (!sidebar.contains(e.target)) {
-            sidebar.classList.remove('expanded');
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        fd.append('username', document.getElementById('login-username').value);
+        fd.append('password', document.getElementById('login-password').value);
+        try {
+            const res = await fetch('/token', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error('Failed');
+            const data = await res.json();
+            token = data.access_token;
+            userId = data.user_id;
+            localStorage.setItem('aurora_token', token);
+            localStorage.setItem('aurora_user_id', userId);
+            localStorage.setItem('aurora_role', data.role);
+            localStorage.setItem('aurora_username', document.getElementById('login-username').value);
+            loginOverlay.style.display = 'none';
+            loginError.style.display = 'none';
+            userDisplay.textContent = `User: ${document.getElementById('login-username').value}`;
+            logoutBtn.style.display = 'inline-block';
+            if(data.role === 'Administrator') adminLink.style.display = 'inline-block';
+            navigateTo('home');
+        } catch(err) {
+            loginError.style.display = 'block';
         }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('aurora_token');
+        localStorage.removeItem('aurora_user_id');
+        localStorage.removeItem('aurora_role');
+        localStorage.removeItem('aurora_username');
+        window.location.reload();
+    });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+//  SIDEBAR & MOBILE NAVIGATION
+// ══════════════════════════════════════════════════════════════════════
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+function toggleMobileSidebar() {
+    sidebar.classList.toggle('open');
+    sidebarBackdrop.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+}
+
+function toggleMobileDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    if (!drawer) return;
+    const isActive = drawer.classList.contains('active');
+    if (isActive) {
+        drawer.classList.remove('active');
+        sidebarBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        drawer.classList.add('active');
+        sidebarBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileDrawer);
+if(sidebarBackdrop) sidebarBackdrop.addEventListener('click', toggleMobileDrawer);
+const mobileDrawerClose = document.getElementById('mobile-drawer-close');
+if(mobileDrawerClose) mobileDrawerClose.addEventListener('click', toggleMobileDrawer);
+
+// Close sidebar on mobile when clicking a nav link
+document.querySelectorAll('.sidebar__link').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeMobileSidebar();
+    });
+});
+
+// Gesture Support
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+}, {passive: true});
+
+function handleSwipe() {
+    if (window.innerWidth > 768) return;
+    const swipeDist = touchEndX - touchStartX;
+    if (swipeDist > 50 && touchStartX < 30) {
+        // Swipe Right from edge
+        if (!sidebar.classList.contains('open')) toggleMobileSidebar();
+    } else if (swipeDist < -50) {
+        // Swipe Left
+        if (sidebar.classList.contains('open')) closeMobileSidebar();
+    }
+}
+
+// Accessibility: Close on Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+        closeMobileSidebar();
     }
 });
 
@@ -104,7 +222,7 @@ searchInput.addEventListener('input', () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
         try {
-            const r = await fetch(`/autocomplete?q=${encodeURIComponent(q)}`);
+            const r = await authFetch(`/autocomplete?q=${encodeURIComponent(q)}`);
             if (!r.ok) return;
             const titles = await r.json();
             searchResults.innerHTML = titles.map(t => `
@@ -195,7 +313,7 @@ chatInput.addEventListener('input', () => {
     clearTimeout(acTimer);
     acTimer = setTimeout(async () => {
         try {
-            const r = await fetch(`/autocomplete?q=${encodeURIComponent(q)}`);
+            const r = await authFetch(`/autocomplete?q=${encodeURIComponent(q)}`);
             if (!r.ok) return;
             const list = await r.json();
             if (list.length > 0) {
@@ -221,9 +339,13 @@ function pickAc(title) {
 // ══════════════════════════════════════════════════════════════════════
 function navigateTo(page) {
     currentPage = page;
+    window.shownItems = []; // Reset exclusions on page navigate
 
-    // Update sidebar active state
-    sidebarNav.querySelectorAll('.sidebar__link').forEach(l => {
+    // Update sidebar & bottom nav active states
+    document.querySelectorAll('.sidebar__link').forEach(l => {
+        l.classList.toggle('active', l.dataset.page === page);
+    });
+    document.querySelectorAll('.bottom-nav__item').forEach(l => {
         l.classList.toggle('active', l.dataset.page === page);
     });
 
@@ -234,17 +356,14 @@ function navigateTo(page) {
             loadHomePage();
             break;
         case 'movies':
-            loadCategoryPage('Recommend popular movies', [
-                'Recommend action movies',
-                'Recommend comedy movies',
-                'Recommend sci-fi movies',
-                'Recommend drama movies'
-            ], 'Movies');
+        case 'categories':
+            loadCategoriesHub();
             break;
         case 'tv-series':
-            loadCategoryPage('Recommend popular TV series', [
-                'Recommend crime series',
-                'Recommend sci-fi series'
+            loadCategoryPage('Trending TV Series', [
+                'Dark Psychological Thrillers',
+                'Feel-Good Family',
+                'Historical Fiction'
             ], 'TV Series');
             break;
         case 'trending':
@@ -261,26 +380,62 @@ function navigateTo(page) {
 
 // ── Home Page ─────────────────────────────────────────────────────────
 async function loadHomePage() {
+    heroSection.innerHTML = '';
+    heroSection.style.display = 'none';
+    contentRows.innerHTML = '';
     showSkeletonRows();
-    const userId = parseInt(userIdInput.value) || 32;
 
-    try {
-        const resp = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, query: 'Recommend me movies' })
-        });
-        const data = await resp.json();
-        let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+    // Sequentially fetch dynamic semantic categories (Home shows multiple rows directly)
+    await fetchAndRender('Top Picks For You', 'Top Picks For You', true);
+    await fetchAndRender('Trending Now', 'Trending Now', false);
+    await fetchAndRender('Mind-Bending Sci-Fi', 'Mind-Bending Sci-Fi', false);
+    await fetchAndRender('Crime Masterpieces', 'Crime Masterpieces', false);
+    await fetchAndRender('Feel-Good Family', 'Feel-Good Family', false);
+    await fetchAndRender('Epic Adventures', 'Epic Adventures', false);
+    await fetchAndRender('Dark Psychological Thrillers', 'Dark Psychological Thrillers', false);
+    await fetchAndRender('Hidden Gems', 'Hidden Gems', false);
+}
 
-        if (movies && movies.length > 0) {
-            renderResults(movies, 'Top Picks For You', true);
-        } else {
-            contentRows.innerHTML = emptyStateHTML();
-        }
-    } catch (err) {
-        contentRows.innerHTML = emptyStateHTML();
-    }
+// ── Universal Categories Hub ──────────────────────────────────────────
+function loadCategoriesHub() {
+    heroSection.innerHTML = '';
+    heroSection.style.display = 'none';
+    
+    const genres = [
+        "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", 
+        "Documentary", "Drama", "Family", "Fantasy", "History", "Horror", 
+        "Music", "Mystery", "Romance", "Science Fiction", "Sports", "Thriller", 
+        "War", "Western", "Psychological", "Cyberpunk", "Dystopian", "Time Travel", 
+        "Epic Adventures", "Martial Arts", "Spy", "Survival", "Hidden Gems"
+    ];
+
+    let gridHtml = `<div class="row-section" style="padding-top:80px;">
+        <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:32px;padding-left:40px;">Explore Categories</h1>
+        <div class="category-hub">`;
+        
+    genres.forEach(g => {
+        gridHtml += `<div class="category-pill" onclick="loadCategoryDetail('${g}')">${g}</div>`;
+    });
+    
+    gridHtml += `</div></div>`;
+    contentRows.innerHTML = gridHtml;
+}
+
+async function loadCategoryDetail(genre) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    contentRows.innerHTML = `
+        <div class="row-section" style="padding-top:80px;">
+            <button onclick="loadCategoriesHub()" style="background:transparent;border:none;color:#a78bfa;cursor:pointer;margin-bottom:20px;font-size:1.1rem;">← Back to Categories</button>
+            <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:32px;">${genre}</h1>
+        </div>
+    `;
+    showSkeletonRows(false);
+    
+    // Reset exclusions so we don't accidentally hide movies from the previous page
+    window.shownItems = [];
+    
+    await fetchAndRender(genre, `Popular in ${genre}`);
+    await fetchAndRender(`More ${genre}`, `More ${genre}`);
 }
 
 // ── Category Page ─────────────────────────────────────────────────────
@@ -296,32 +451,53 @@ async function loadCategoryPage(mainQuery, extraQueries, pageTitle) {
     await fetchAndRender(mainQuery, `Popular ${pageTitle}`);
 
     for (const q of extraQueries) {
-        const label = q.replace('Recommend ', '').replace(' movies', ' Movies').replace(' series', ' Series');
-        await fetchAndRender(q, label.charAt(0).toUpperCase() + label.slice(1));
+        await fetchAndRender(q, q);
     }
 }
 
-async function fetchAndRender(query, rowTitle) {
-    const userId = parseInt(userIdInput.value) || 32;
+async function fetchAndRender(query, rowTitle, isHero = false) {
     try {
-        const resp = await fetch('/chat', {
+        const resp = await authFetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, query })
+            body: JSON.stringify({ query, exclude_ids: window.shownItems || [] })
         });
         const data = await resp.json();
         let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
         if (movies && movies.length > 0) {
+            // Track shown items to prevent duplication across rows
+            movies.forEach(m => {
+                if (!window.shownItems.includes(m.item_id)) {
+                    window.shownItems.push(m.item_id);
+                }
+            });
             globalMovies = [...globalMovies, ...movies];
-            if (!heroSection.innerHTML && currentPage !== 'trending') {
+            
+            if (isHero && !heroSection.innerHTML) {
                 renderHero(movies[0]);
                 appendRow(rowTitle, movies.slice(1));
             } else {
                 appendRow(rowTitle, movies);
             }
+            }
         }
-    } catch (e) { /* silently skip failed row */ }
+} catch (e) { /* silently skip failed row */ }
 }
+
+// ══════════════════════════════════════════════════════════════════════
+//  SEARCH -> MAP TO AI CHATBOT
+// ══════════════════════════════════════════════════════════════════════
+const desktopSearchTrigger = document.getElementById('search-trigger');
+const mobileSearchBtn = document.getElementById('mobile-search-btn');
+
+function openAiPanelFromSearch(e) {
+    if(e) e.preventDefault();
+    aiPanel.classList.add('open');
+    chatInput.focus();
+}
+
+if (desktopSearchTrigger) desktopSearchTrigger.addEventListener('click', openAiPanelFromSearch);
+if (mobileSearchBtn) mobileSearchBtn.addEventListener('click', openAiPanelFromSearch);
 
 // ── My List ───────────────────────────────────────────────────────────
 function renderMyList() {
@@ -400,7 +576,7 @@ function renderHero(movie) {
     heroSection.innerHTML = `
         <div class="hero__bg" style="background-image:url('${bg}')"></div>
         <div class="hero__overlay"></div>
-        <div class="hero__inner">
+        <div class="hero__inner" onclick="openModal(${movie.item_id})" style="cursor: pointer;">
             <div class="hero__match">★ ${score}% Aurora Match</div>
             <h1 class="hero__title">${title}</h1>
             <div class="hero__meta">
@@ -411,10 +587,10 @@ function renderHero(movie) {
             <div class="hero__genres">${genres}</div>
             <p class="hero__desc">${synopsis}</p>
             <div class="hero__btns">
-                <button class="hero-btn hero-btn--play" onclick="openModal(${movie.item_id})">
+                <button class="hero-btn hero-btn--play" onclick="event.stopPropagation(); openModal(${movie.item_id})">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Play
                 </button>
-                <button class="hero-btn hero-btn--info" onclick="openModal(${movie.item_id})">
+                <button class="hero-btn hero-btn--info" onclick="event.stopPropagation(); openModal(${movie.item_id})">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> More Info
                 </button>
             </div>
@@ -438,7 +614,7 @@ function appendRow(title, movies) {
         const saved = isInMyList(movie.item_id);
 
         return `
-        <div class="card-wrap" data-idx="${i}">
+        <div class="card-wrap" data-idx="${i}" onclick="openModal(${movie.item_id})" style="cursor: pointer;">
             <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
                 <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
                 <div class="card-3d__badge">${score}%</div>
@@ -462,10 +638,10 @@ function appendRow(title, movies) {
                         </ul>
                     </div>
                     <div class="card-expand__btns">
-                        <button class="card-expand__btn card-expand__btn--play" onclick="openModal(${movie.item_id})" aria-label="Play">
+                        <button class="card-expand__btn card-expand__btn--play" onclick="event.stopPropagation(); openModal(${movie.item_id})" aria-label="Play">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         </button>
-                        <button class="card-expand__btn" onclick="toggleSave(${movie.item_id})" aria-label="${saved ? 'Remove from list' : 'Add to list'}">
+                        <button class="card-expand__btn" onclick="event.stopPropagation(); toggleSave(${movie.item_id})" aria-label="${saved ? 'Remove from list' : 'Add to list'}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 ${saved ? '<line x1="5" y1="12" x2="19" y2="12"/>' : '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'}
                             </svg>
@@ -524,67 +700,107 @@ function attachTilt(card) {
 // ══════════════════════════════════════════════════════════════════════
 //  DETAIL MODAL
 // ══════════════════════════════════════════════════════════════════════
-function openModal(id) {
-    const movie = globalMovies.find(m => m.item_id === id) || myList.find(m => m.item_id === id);
-    if (!movie) return;
-
-    const m = movie.rich_metadata || {};
-    const title = movie.title || 'Unknown';
-    const bg = movie.backdrop_url || movie.poster_url || '';
-    const score = m.match_percentage || randScore();
-    const synopsis = m.story_summary || movie.overview || 'No overview available.';
-    const reason = movie.explanation || m.why_recommended || 'Based on your viewing history and high thematic correlation with your preferences.';
-    const saved = isInMyList(id);
-
-    modalBody.innerHTML = `
-        <div class="modal-hero" style="background-image:url('${bg}')">
-            <div class="modal-hero__info">
-                <div class="modal-hero__badge">★ ${score}% Match</div>
-                <h2 class="modal-hero__title">${title}</h2>
-            </div>
-        </div>
-        <div class="modal-body-grid">
-            <div>
-                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
-                    <span style="color:var(--match-green);font-weight:700;font-size:1.1rem;">${score}% Match</span>
-                    ${m.year ? `<span style="color:var(--text-muted)">${m.year}</span>` : ''}
-                    ${m.runtime ? `<span style="color:var(--text-muted)">${m.runtime}</span>` : ''}
-                    <button onclick="toggleSave(${id});this.textContent=isInMyList(${id})?'✓ In My List':'+ My List'" style="padding:6px 16px;border-radius:var(--r-pill);background:var(--glass-bg-3);border:1px solid var(--glass-border);color:var(--text-primary);font-size:0.85rem;font-weight:600;cursor:pointer;">
-                        ${saved ? '✓ In My List' : '+ My List'}
-                    </button>
-                </div>
-                <div class="modal-section">
-                    <h3>Synopsis</h3>
-                    <p>${synopsis}</p>
-                </div>
-                <div class="modal-ai-box">
-                    <h3>Why Aurora Recommends This</h3>
-                    <ul style="list-style:none">
-                        <li>${reason}</li>
-                        <li>Matches your preferred genres</li>
-                        <li>Highly rated by similar viewers</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="modal-sidebar">
-                <dl>
-                    <dt>Cast</dt><dd>${m.main_cast || 'Various Artists'}</dd>
-                    <dt>Director</dt><dd>${m.director || 'Unknown'}</dd>
-                    <dt>Genres</dt><dd>${(m.tags || []).join(', ') || 'N/A'}</dd>
-                    ${m.year ? `<dt>Year</dt><dd>${m.year}</dd>` : ''}
-                    ${m.runtime ? `<dt>Runtime</dt><dd>${m.runtime}</dd>` : ''}
-                </dl>
-            </div>
-        </div>
-    `;
-    modalOverlay.style.display = 'flex';
-
-    // Send feedback
-    fetch('/feedback', {
+async function openModal(id) {
+    // 1. Fire Event Processor tracking
+    authFetch('/events/ingest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: parseInt(userIdInput.value) || 32, item_id: id, label: 1.0 })
-    }).catch(() => {});
+        body: JSON.stringify({ event_type: "click", item_id: id })
+    }).catch(e => console.error("Event ingest failed:", e));
+
+    // 2. Open Modal with loading state
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Reset fields to loading state
+    document.getElementById('modal-title').textContent = 'Loading...';
+    document.getElementById('modal-poster').src = '';
+    document.getElementById('modal-backdrop').style.backgroundImage = 'none';
+    document.getElementById('modal-synopsis').textContent = 'Fetching cinematic details...';
+    document.getElementById('modal-genres').innerHTML = '';
+    document.getElementById('modal-match').textContent = '';
+    document.getElementById('modal-similar').innerHTML = '';
+
+    try {
+        // 3. Fetch massive payload
+        const resp = await authFetch(`/movie/${id}`);
+        const m = await resp.json();
+        
+        if (m.error) throw new Error(m.error);
+
+        // Populate fields
+        document.getElementById('modal-title').textContent = m.title || 'Unknown';
+        
+        const posterUrl = m.poster_url || placeholder(m.title);
+        const bgUrl = m.backdrop_url || posterUrl;
+        document.getElementById('modal-poster').src = posterUrl;
+        document.getElementById('modal-backdrop').style.backgroundImage = `url('${bgUrl}')`;
+        
+        document.getElementById('modal-match').textContent = `${m.match_percentage || 85}% Match`;
+        document.getElementById('modal-year').textContent = m.year || '';
+        document.getElementById('modal-rating').textContent = m.rating ? `IMDB ${m.rating}` : '';
+        document.getElementById('modal-runtime').textContent = m.runtime || '';
+        
+        document.getElementById('modal-genres').innerHTML = (m.genres || []).map(g => `<span>${g}</span>`).join('');
+        document.getElementById('modal-audience').textContent = m.audience_type || 'General';
+        
+        document.getElementById('modal-synopsis').textContent = m.story_summary || 'No overview available.';
+        document.getElementById('modal-why').textContent = m.why_recommended || 'Highly correlated with your preferences.';
+        
+        document.getElementById('modal-director').textContent = m.director || 'Unknown';
+        
+        document.getElementById('modal-themes').innerHTML = (m.themes || []).map(t => `<span>${t}</span>`).join('');
+        document.getElementById('modal-moods').innerHTML = (m.moods || []).map(t => `<span>${t}</span>`).join('');
+        
+        document.getElementById('modal-pacing').textContent = m.pacing || 'Steady';
+        document.getElementById('modal-complexity').textContent = m.complexity || 'Medium';
+        document.getElementById('modal-world').textContent = m.world_building || 'Standard';
+        document.getElementById('modal-action').textContent = m.action_level || 'Medium';
+        
+        document.getElementById('adv-violence').textContent = m.violence_level || 'Low';
+        document.getElementById('adv-language').textContent = m.language_severity || 'Mild';
+        document.getElementById('adv-adult').textContent = m.adult ? 'Yes' : 'No';
+        
+        // Fetch Similar Movies via RAG Chatbot Endpoint dynamically
+        const simContainer = document.getElementById('modal-similar');
+        simContainer.innerHTML = '<p>Loading similar content...</p>';
+        
+        try {
+            const simResp = await authFetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: "Movies strictly similar to " + m.title, exclude_ids: [] })
+            });
+            const simData = await simResp.json();
+            const similarMovies = Array.isArray(simData.response) ? simData.response : (simData.response && simData.response.value);
+            
+            if (similarMovies && similarMovies.length > 0) {
+                simContainer.innerHTML = similarMovies.slice(0, 8).map(sm => `
+                    <div class="sim-card" onclick="openModal(${sm.item_id})">
+                        <img src="${sm.poster_url || placeholder(sm.title)}" alt="${sm.title}" class="sim-poster">
+                        <div class="sim-title">${sm.title}</div>
+                    </div>
+                `).join('');
+            } else {
+                simContainer.innerHTML = '<p>No similar titles found.</p>';
+            }
+        } catch (e) {
+            simContainer.innerHTML = '<p>Failed to load similar titles.</p>';
+        }
+
+        // Add to list btn state
+        const addBtn = document.getElementById('modal-add-list');
+        const saved = isInMyList(id);
+        addBtn.innerHTML = saved ? `✓ Added` : `+ Add to List`;
+        addBtn.onclick = () => {
+            toggleSave(id);
+            addBtn.innerHTML = isInMyList(id) ? `✓ Added` : `+ Add to List`;
+        };
+
+    } catch (err) {
+        document.getElementById('modal-title').textContent = 'Error loading details.';
+        document.getElementById('modal-synopsis').textContent = 'Could not fetch data.';
+    }
 }
 
 function toggleSave(id) {
@@ -592,17 +808,24 @@ function toggleSave(id) {
     if (movie) toggleMyList(movie);
 }
 
-closeModalBtn.addEventListener('click', () => modalOverlay.style.display = 'none');
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.style.display = 'none'; });
-
-// ══════════════════════════════════════════════════════════════════════
-//  KEYBOARD SHORTCUTS
-// ══════════════════════════════════════════════════════════════════════
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        modalOverlay.style.display = 'none';
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
         closeSearch();
         aiPanel.classList.remove('open');
+    }
+});
+
+// Close button listener rewrite
+closeModalBtn.addEventListener('click', () => {
+    modalOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+});
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
     }
 });
 

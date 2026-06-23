@@ -35,6 +35,7 @@ class ExplainResponse(BaseModel):
     movie_title: str
     explanation: str
     graph_path: list[str]
+    rich_metadata: dict
 
 
 @app.on_event("startup")
@@ -91,13 +92,22 @@ def explain_recommendation(request: ExplainRequest):
         movie_title=title,
         graph_path=graph_path
     )
+    
+    # 5. Generate Rich Metadata
+    rich_metadata = llm_provider.generate_rich_metadata(
+        item_id=request.item_id,
+        title=title,
+        explanation=explanation,
+        score=0.0
+    )
 
     return ExplainResponse(
         user_id=request.user_id,
         item_id=request.item_id,
         movie_title=title,
         explanation=explanation,
-        graph_path=graph_path
+        graph_path=graph_path,
+        rich_metadata=rich_metadata
     )
 
 class ExplainSimilarityRequest(BaseModel):

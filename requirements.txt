@@ -7,3 +7,9 @@ redis
 fakeredis
 networkx
 pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-multipart
+slowapi
+python-dotenv

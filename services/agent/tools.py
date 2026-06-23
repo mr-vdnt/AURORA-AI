@@ -6,11 +6,11 @@ to interact with the underlying microservices.
 """
 import requests
 
-def get_recommendations(user_id: int) -> dict:
+def get_recommendations(user_id: int, exclude_ids: list[int] = None) -> dict:
     """Hits the Ranking Service (Port 8001) for personalized recommendations."""
     print(f"Agent Tool: Fetching recommendations for User {user_id}")
     try:
-        req = {"user_id": user_id, "top_k_retrieval": 50, "top_k_final": 20}
+        req = {"user_id": user_id, "top_k_retrieval": 50, "top_k_final": 20, "exclude_ids": exclude_ids or []}
         resp = requests.post("http://127.0.0.1:8001/rank", json=req, timeout=15)
         if resp.status_code == 200:
             items = resp.json()  # This is a plain list of RankedItem dicts
@@ -60,11 +60,11 @@ def search_movie_by_title(title_query: str) -> dict:
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-def get_similar_movies(item_id: int) -> dict:
+def get_similar_movies(item_id: int, exclude_ids: list[int] = None) -> dict:
     """Hits the Ranking Service (Port 8001) for item-to-item similarity."""
     print(f"Agent Tool: Fetching similar movies for Item {item_id}")
     try:
-        req = {"item_id": item_id, "top_k": 20}
+        req = {"item_id": item_id, "top_k": 20, "exclude_ids": exclude_ids or []}
         resp = requests.post("http://127.0.0.1:8001/similar", json=req, timeout=15)
         if resp.status_code == 200:
             return {"status": "success", "data": resp.json()}

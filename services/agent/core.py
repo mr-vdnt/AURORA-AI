@@ -12,6 +12,39 @@ from services.agent.tools import get_recommendations, get_explanation, get_trend
 movies_df = None
 if os.path.exists("data/raw/movies.csv"):
     movies_df = pd.read_csv("data/raw/movies.csv")
+    movies_df['genres'] = movies_df['genres'].fillna('')
+    movies_df['overview'] = movies_df['overview'].fillna('')
+    def generate_tags(row):
+        text = str(row['genres']).lower() + " " + str(row['overview']).lower()
+        tags = set(row['genres'].split('|'))
+        
+        # Scifi & Fantasy
+        if 'space' in text or 'alien' in text: tags.add('Space Exploration')
+        if 'time travel' in text or 'time loop' in text: tags.add('Time Travel')
+        if 'cyber' in text or 'hacker' in text: tags.add('Cyberpunk')
+        if 'post-apocalyptic' in text or 'dystopi' in text: tags.add('Dystopian')
+        
+        # Thriller & Psychological
+        if 'psychological' in text or 'mind' in text: tags.add('Mind-Bending')
+        if 'dark' in text or 'grim' in text: tags.add('Dark Psychological Thrillers')
+        if 'suspense' in text or 'tense' in text: tags.add('Suspenseful')
+        
+        # Crime & Action
+        if 'crime' in text or 'murder' in text or 'detective' in text: tags.add('Crime Masterpieces')
+        if 'spy' in text or 'espionage' in text: tags.add('Spy')
+        if 'martial arts' in text or 'kung fu' in text: tags.add('Martial Arts')
+        if 'survival' in text or 'survive' in text: tags.add('Survival')
+        
+        # Drama & Emotion
+        if 'political' in text or 'president' in text: tags.add('Political Intrigue')
+        if 'history' in text or 'war' in text: tags.add('Historical Fiction')
+        if 'heart' in text or 'feel-good' in text or 'family' in text: tags.add('Feel-Good Family')
+        if 'epic' in text or 'journey' in text: tags.add('Epic Adventures')
+        if 'coming of age' in text or 'teen' in text: tags.add('Coming of Age')
+        if 'romance' in text or 'love' in text: tags.add('Romantic')
+        
+        return "|".join(tags)
+    movies_df['rich_tags'] = movies_df.apply(generate_tags, axis=1)
 
 def _get_movie_metadata(row):
     """Helper to safely extract movie metadata for UI."""
@@ -47,17 +80,18 @@ class OrchestratorAgent:
         title_words = [w for w in words if w.lower() not in stopwords]
         return " ".join(title_words) if title_words else "Toy Story"
 
-    def process_query(self, user_id: int, query: str) -> dict:
+    def process_query(self, user_id: int, query: str, exclude_ids: list[int] = None) -> dict:
+        if exclude_ids is None:
+            exclude_ids = []
+            
         if user_id not in self.conversation_memory:
             self.conversation_memory[user_id] = []
         self.conversation_memory[user_id].append(query)
         
-        # Analyze history for context
         context_query = " ".join(self.conversation_memory[user_id][-3:])
         
         top_intent = "recommendation" # Default
         
-        # Heuristic overrides for better accuracy
         lower_q = query.lower()
         context_lower = context_query.lower()
         
@@ -67,44 +101,77 @@ class OrchestratorAgent:
             top_intent = "trending"
         elif "why" in lower_q or "explain" in lower_q:
             top_intent = "explanation"
-        elif any(g in lower_q for g in ["horror", "comedy", "action", "thriller", "drama", "anime", "k-drama", "bollywood", "romance", "psychological", "family"]):
-            top_intent = "genre_search"
+        elif any(g in lower_q for g in ["horror", "comedy", "action", "thriller", "drama", "anime", "sci-fi", "romance", "psychological", "family", "mind-bending", "dark", "crime", "space", "time travel", "epic", "feel-good", "historical", "hidden gems"]):
+            top_intent = "category_cluster"
         elif "recommend" in lower_q:
             top_intent = "recommendation"
-        elif any(g in context_lower for g in ["horror", "comedy", "action", "thriller", "drama", "anime"]):
-            # Memory fallback
+        elif any(g in context_lower for g in ["horror", "comedy", "action", "thriller", "drama", "anime", "sci-fi", "romance"]):
             if top_intent == "recommendation" and "similar" not in lower_q:
-                top_intent = "genre_search"
-                lower_q = context_lower # pass history to genre extractor
-        elif any(g in lower_q for g in ["horror", "comedy", "action", "thriller", "drama", "anime", "k-drama", "bollywood", "romance", "psychological", "family"]):
-            top_intent = "genre_search"
-        elif "recommend" in lower_q:
-            top_intent = "recommendation"
-            
+                top_intent = "category_cluster"
+                lower_q = context_lower
+                
         print(f"Agent classified intent: '{top_intent}'")
-        
         response_data = None
         
-        if top_intent == "genre_search":
+        if top_intent == "category_cluster":
             if movies_df is not None:
-                # Find matching genres or tags
-                genres_list = ["horror", "comedy", "action", "thriller", "drama", "anime", "k-drama", "bollywood", "romance", "psychological", "family"]
+                # 1. Normalize Category
+                genres_list = ["horror", "comedy", "action", "thriller", "drama", "anime", "sci-fi", "romance", "psychological", "family", "mind-bending", "dark", "crime", "space", "time travel", "epic", "feel-good", "historical", "hidden gems"]
                 detected_genre = next((g for g in genres_list if g in lower_q), None)
                 if not detected_genre:
-                    detected_genre = lower_q.replace(" movies", "").replace(" films", "").replace(" show ", "").strip()
+                    detected_genre = lower_q.replace(" movies", "").replace(" films", "").replace(" show ", "").replace("recommend ", "").strip()
+                
+                # 2. Find Candidate Seeds based on tags and overview
+                search_term = detected_genre.lower()
+                matched = movies_df[movies_df['rich_tags'].str.lower().str.contains(search_term, na=False) | movies_df['genres'].str.lower().str.contains(search_term, na=False) | movies_df['overview'].str.lower().str.contains(search_term, na=False)]
+                
+                if search_term == "hidden gems":
+                    matched = movies_df[(movies_df['rating'] > 7.5)]
+                
+                valid_seeds = matched[~matched['item_id'].isin(exclude_ids)]
+                if valid_seeds.empty: valid_seeds = matched
+                
+                if not valid_seeds.empty:
+                    # Pick a seed movie from the top highly rated matches
+                    seed_row = valid_seeds.sort_values(by='rating', ascending=False).head(20).sample(1).iloc[0]
+                    seed_id = int(seed_row['item_id'])
                     
-                matched = movies_df[movies_df['genres'].str.contains(detected_genre, case=False, na=False) | movies_df['overview'].str.contains(detected_genre, case=False, na=False)]
-                response_data = []
-                for _, row in matched.head(20).iterrows():
-                    response_data.append({
-                        "item_id": int(row['item_id']),
-                        "title": row['title'],
-                        "poster_url": row.get('poster_url', ''),
-                        "backdrop_url": row.get('backdrop_url', ''),
-                        "overview": row.get('overview', ''),
-                        "rich_metadata": _get_movie_metadata(row)
-                    })
-                if not response_data:
+                    # 3. RAG Retrieval via Vector Search FAISS
+                    sim_resp = get_similar_movies(seed_id, exclude_ids)
+                    if sim_resp["status"] == "success":
+                        similar_items = sim_resp["data"]
+                        response_data = []
+                        if seed_id not in exclude_ids:
+                            response_data.append({
+                                "item_id": seed_id,
+                                "title": seed_row['title'],
+                                "poster_url": seed_row.get('poster_url', ''),
+                                "backdrop_url": seed_row.get('backdrop_url', ''),
+                                "overview": seed_row.get('overview', ''),
+                                "rich_metadata": _get_movie_metadata(seed_row),
+                                "explanation": f"Chosen as an anchor for '{detected_genre.title()}'."
+                            })
+                            exclude_ids.append(seed_id)
+                            
+                        for item in similar_items:
+                            if item['item_id'] in exclude_ids: continue
+                            if len(response_data) >= 15: break
+                            
+                            row = movies_df[movies_df['item_id'] == item['item_id']]
+                            if not row.empty:
+                                r = row.iloc[0]
+                                response_data.append({
+                                    "item_id": int(r['item_id']),
+                                    "title": r['title'],
+                                    "poster_url": r.get('poster_url', ''),
+                                    "backdrop_url": r.get('backdrop_url', ''),
+                                    "overview": r.get('overview', ''),
+                                    "rich_metadata": _get_movie_metadata(r),
+                                    "explanation": f"Semantically related to '{detected_genre.title()}' based on plot embeddings and tags."
+                                })
+                    else:
+                        response_data = "Failed to retrieve category cluster."
+                else:
                     response_data = "We couldn't find any titles matching that category."
             else:
                 response_data = "Database not loaded."
@@ -112,54 +179,54 @@ class OrchestratorAgent:
         elif top_intent == "similar_movies":
             title_query = self._extract_movie_title(query)
             search_res = search_movie_by_title(title_query)
-            
             if search_res["status"] == "success":
                 source_id = search_res["item_id"]
-                source_title = search_res["title"]
-                
-                sim_resp = get_similar_movies(source_id)
+                sim_resp = get_similar_movies(source_id, exclude_ids)
                 if sim_resp["status"] == "success":
                     similar_items = sim_resp["data"]
+                    enriched = []
                     for item in similar_items:
-                        # Enrich locally — no Graph RAG call (port 8003 doesn't exist on Render)
-                        item["explanation"] = f"Similar to {source_title} based on shared themes and genre DNA."
-                        item["rich_metadata"] = {}
-                        
-                        # Add poster + metadata if available in df
+                        if item['item_id'] in exclude_ids: continue
                         if movies_df is not None:
                             row = movies_df[movies_df['item_id'] == item['item_id']]
                             if not row.empty:
-                                item["poster_url"] = row.iloc[0].get('poster_url', '')
-                                item["rich_metadata"] = _get_movie_metadata(row.iloc[0])
-                                
-                    response_data = similar_items
+                                r = row.iloc[0]
+                                enriched.append({
+                                    "item_id": int(r['item_id']),
+                                    "title": r['title'],
+                                    "poster_url": r.get('poster_url', ''),
+                                    "backdrop_url": r.get('backdrop_url', ''),
+                                    "overview": r.get('overview', ''),
+                                    "rich_metadata": _get_movie_metadata(r),
+                                    "explanation": f"Similar to {search_res['title']} based on semantic embeddings."
+                                })
+                    response_data = enriched
                 else:
                     response_data = sim_resp["message"]
             else:
                 response_data = search_res["message"]
 
         elif top_intent == "recommendation":
-            tool_resp = get_recommendations(user_id)
+            tool_resp = get_recommendations(user_id, exclude_ids)
             if tool_resp["status"] == "success":
                 raw_items = tool_resp["data"]["recommendations"]
                 enriched = []
                 for item in raw_items:
                     iid = item.get("item_id", 0)
-                    entry = {
-                        "item_id": iid,
-                        "title": item.get("title", ""),
-                        "poster_url": "",
-                        "rich_metadata": {}
-                    }
+                    if iid in exclude_ids: continue
                     if movies_df is not None:
                         row = movies_df[movies_df['item_id'] == iid]
                         if not row.empty:
-                            entry["title"] = row.iloc[0]['title']
-                            entry["poster_url"] = row.iloc[0].get('poster_url', '')
-                            entry["backdrop_url"] = row.iloc[0].get('backdrop_url', '')
-                            entry["overview"] = row.iloc[0].get('overview', '')
-                            entry["rich_metadata"] = _get_movie_metadata(row.iloc[0])
-                    enriched.append(entry)
+                            r = row.iloc[0]
+                            enriched.append({
+                                "item_id": iid,
+                                "title": r['title'],
+                                "poster_url": r.get('poster_url', ''),
+                                "backdrop_url": r.get('backdrop_url', ''),
+                                "overview": r.get('overview', ''),
+                                "rich_metadata": _get_movie_metadata(r),
+                                "explanation": "Recommended because it aligns strongly with your overall preferences."
+                            })
                 response_data = enriched
             else:
                 response_data = tool_resp["message"]
@@ -179,33 +246,22 @@ class OrchestratorAgent:
                 response_data = []
                 for t in trends:
                     item_id = t[0]
-                    score = t[1]
-                    title = f"Movie {item_id}"
-                    poster_url = ""
-                    meta = {}
+                    if item_id in exclude_ids: continue
+                    if len(response_data) >= 15: break
                     if movies_df is not None:
                         row = movies_df[movies_df['item_id'] == item_id]
                         if not row.empty:
-                            title = row.iloc[0]['title']
-                            poster_url = row.iloc[0].get('poster_url', '')
-                            meta = _get_movie_metadata(row.iloc[0])
-                    
-                    backdrop_url = ""
-                    overview = ""
-                    if movies_df is not None:
-                        trow = movies_df[movies_df['item_id'] == item_id]
-                        if not trow.empty:
-                            backdrop_url = trow.iloc[0].get('backdrop_url', '')
-                            overview = trow.iloc[0].get('overview', '')
-                    response_data.append({
-                        "item_id": item_id, 
-                        "score": score, 
-                        "title": title,
-                        "poster_url": poster_url,
-                        "backdrop_url": backdrop_url,
-                        "overview": overview,
-                        "rich_metadata": meta
-                    })
+                            r = row.iloc[0]
+                            response_data.append({
+                                "item_id": item_id, 
+                                "score": t[1], 
+                                "title": r['title'],
+                                "poster_url": r.get('poster_url', ''),
+                                "backdrop_url": r.get('backdrop_url', ''),
+                                "overview": r.get('overview', ''),
+                                "rich_metadata": _get_movie_metadata(r),
+                                "explanation": "Trending globally across the platform right now."
+                            })
             else:
                 response_data = tool_resp["message"]
                 

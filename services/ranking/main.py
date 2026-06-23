@@ -17,6 +17,7 @@ class RankRequest(BaseModel):
     user_id: int
     top_k_retrieval: int = 50   # How many candidates to pull from FAISS
     top_k_final: int = 10       # How many to return after re-ranking
+    exclude_ids: list[int] = []
 
 
 class RankedItem(BaseModel):
@@ -82,6 +83,7 @@ def health():
 class SimilarRequest(BaseModel):
     item_id: int
     top_k: int = 20
+    exclude_ids: list[int] = []
 
 @app.post("/similar", response_model=list[RankedItem])
 def get_similar_items(request: SimilarRequest):
@@ -101,16 +103,16 @@ def get_similar_items(request: SimilarRequest):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Could not reconstruct embedding for item {request.item_id}: {e}")
 
-    # We ask for top_k + 1 because the most similar item to X is X itself.
-    distances, indices = faiss_index.search(item_emb, request.top_k + 1)
+    search_k = request.top_k + len(request.exclude_ids) + 1
+    distances, indices = faiss_index.search(item_emb, search_k)
     
     candidate_ids = (indices[0] + 1).tolist()
     retrieval_scores = distances[0].tolist()
     
     results = []
     for cid, r_score in zip(candidate_ids, retrieval_scores):
-        if cid == request.item_id:
-            continue # Skip the seed movie itself
+        if cid == request.item_id or cid in request.exclude_ids:
+            continue # Skip the seed movie itself or excluded items
             
         title = ""
         if movies_df is not None:
@@ -165,21 +167,27 @@ def rank(request: RankRequest):
         try:
             item_emb = faiss_index.reconstruct(last_item - 1)
             item_emb = np.array([item_emb]).astype('float32')
-            distances, indices = faiss_index.search(item_emb, request.top_k_retrieval + 1)
+            search_k = request.top_k_retrieval + len(request.exclude_ids) + 1
+            distances, indices = faiss_index.search(item_emb, search_k)
             candidate_ids = (indices[0] + 1).tolist()
             retrieval_scores = distances[0].tolist()
-            # Remove the seed item
-            if last_item in candidate_ids:
-                idx = candidate_ids.index(last_item)
-                candidate_ids.pop(idx)
-                retrieval_scores.pop(idx)
+            
+            # Filter exclusions
+            filtered_cids = []
+            filtered_scores = []
+            for c, s in zip(candidate_ids, retrieval_scores):
+                if c != last_item and c not in request.exclude_ids:
+                    filtered_cids.append(c)
+                    filtered_scores.append(s)
+            candidate_ids = filtered_cids
+            retrieval_scores = filtered_scores
         except Exception:
-            # Fallback to popular items if reconstruction fails
-            candidate_ids = list(range(1, min(request.top_k_retrieval + 1, num_items + 1)))
+            candidate_ids = list(range(1, min(request.top_k_retrieval + len(request.exclude_ids) + 1, num_items + 1)))
+            candidate_ids = [c for c in candidate_ids if c not in request.exclude_ids]
             retrieval_scores = [1.0] * len(candidate_ids)
     else:
-        # Fallback to general popular items (e.g. first N items, assuming sorted by popularity)
-        candidate_ids = list(range(1, min(request.top_k_retrieval + 1, num_items + 1)))
+        candidate_ids = list(range(1, min(request.top_k_retrieval + len(request.exclude_ids) + 1, num_items + 1)))
+        candidate_ids = [c for c in candidate_ids if c not in request.exclude_ids]
         retrieval_scores = [1.0] * len(candidate_ids)
 
     # ── Stage 2: Re-ranking with DeepFM ─────────────────────────────

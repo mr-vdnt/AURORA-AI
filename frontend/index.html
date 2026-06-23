@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURORA — AI Cinematic Discovery</title>
     <meta name="description" content="AURORA is an intelligent AI-powered cinematic discovery platform. Your personal movie universe.">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <!-- ═══ Glass Sidebar ═══ -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar__header">
             <div class="sidebar__logo">
@@ -53,8 +54,11 @@
                 <span>Profile</span>
                 <div class="profile-dropdown" id="profile-dropdown">
                     <div class="profile-dropdown__uid">
-                        <label>User&nbsp;ID</label>
-                        <input type="number" id="user-id-input" value="32" min="1" max="943" aria-label="User ID">
+                        <div class="user-id-container" id="auth-container">
+            <span id="current-user-display" style="color: #fff; margin-right: 15px;">Not Logged In</span>
+            <button id="logout-btn" style="display: none; padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; cursor: pointer;">Sign Out</button>
+            <a href="/admin.html" id="admin-link" style="display: none; margin-left: 10px; color: var(--match-green); text-decoration: none;">🛡️ Admin</a>
+        </div>
                     </div>
                     <div class="profile-dropdown__sep"></div>
                     <a href="#" class="profile-dropdown__item">👤 Account</a>
@@ -102,8 +106,11 @@
         </div>
     </aside>
 
-    <!-- ═══ Top Bar (over main content) ═══ -->
+    <!-- ═══ Topbar ═══ -->
     <header class="topbar" id="topbar">
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Open Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <button class="topbar__ai-btn" id="ai-trigger" aria-label="Aurora AI">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             <span>Aurora AI</span>
@@ -117,10 +124,142 @@
     </main>
 
     <!-- ═══ Detail Modal ═══ -->
-    <div class="modal-overlay" id="movie-detail-modal" style="display:none;">
-        <div class="modal-content">
-            <button class="modal-close" id="close-modal-btn" aria-label="Close">&times;</button>
-            <div id="modal-body"></div>
+    <div class="modal-overlay" id="movie-detail-modal">
+        <div class="cinematic-modal">
+            <!-- Close Button -->
+            <button class="modal-close-btn" id="close-modal-btn" aria-label="Close Modal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <!-- Hero Backdrop Section -->
+            <div class="modal-hero">
+                <div class="modal-hero-bg" id="modal-backdrop"></div>
+                <div class="modal-hero-gradient"></div>
+                
+                <div class="modal-hero-content">
+                    <a href="#" id="modal-poster-link"><img src="" alt="Poster" class="modal-poster" id="modal-poster"></a>
+                    
+                    <div class="modal-main-info">
+                        <!-- 1. MOVIE TITLE -->
+                        <h1 class="modal-title" id="modal-title"></h1>
+                        
+                        <!-- 12. & 13. RATINGS, RUNTIME, RELEASE -->
+                        <div class="modal-meta-row">
+                            <span class="modal-match" id="modal-match"></span>
+                            <span class="modal-year" id="modal-year"></span>
+                            <span class="modal-rating" id="modal-rating"></span>
+                            <span class="modal-runtime" id="modal-runtime"></span>
+                        </div>
+
+                        <!-- 3. GENRES -->
+                        <div class="modal-genres" id="modal-genres"></div>
+
+                        <!-- 8. CONTENT ADVISORY (Brief) -->
+                        <div class="modal-advisory-badge" id="modal-audience"></div>
+
+                        <!-- Action Buttons -->
+                        <div class="modal-actions">
+                            <button class="btn-watch"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Watch Trailer</button>
+                            <button class="btn-add-list" id="modal-add-list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Add to List</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Information Body -->
+            <div class="modal-body">
+                <div class="modal-grid">
+                    
+                    <!-- Left Column: Synopsis, Explanations, Cast -->
+                    <div class="modal-col-main">
+                        <!-- 2. SHORT SYNOPSIS -->
+                        <p class="modal-synopsis" id="modal-synopsis"></p>
+                        
+                        <!-- 6. WHY AURORA RECOMMENDED THIS -->
+                        <div class="aurora-reason-box">
+                            <h3><span class="ai-glow">✦</span> Why Aurora Recommended This</h3>
+                            <p id="modal-why"></p>
+                        </div>
+
+                        <!-- 7. AUDIENCE MATCH -->
+                        <div class="modal-section">
+                            <h3>Audience Match</h3>
+                            <div class="modal-audience-match" id="modal-audience-match"></div>
+                        </div>
+
+                        <!-- 9. CAST HIGHLIGHTS (Mocked horizontally) -->
+                        <div class="modal-section">
+                            <h3>Cast</h3>
+                            <div class="modal-cast-row" id="modal-cast">
+                                <!-- Cast cards injected here -->
+                            </div>
+                        </div>
+
+                        <!-- 15. TRAILER SECTION -->
+                        <div class="modal-section">
+                            <h3>Trailer</h3>
+                            <div class="modal-trailer-placeholder">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            </div>
+                        </div>
+
+                        <!-- 17. SIMILAR MOVIES -->
+                        <div class="modal-section">
+                            <h3>Because You Viewed This</h3>
+                            <div class="modal-similar-row" id="modal-similar">
+                                <!-- Similar movie cards injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Details, Themes, Metadata -->
+                    <div class="modal-col-side">
+                        <!-- 10. DIRECTOR -->
+                        <div class="modal-side-item">
+                            <span class="side-label">Director</span>
+                            <span class="side-value" id="modal-director"></span>
+                        </div>
+
+                        <!-- 4. KEY THEMES -->
+                        <div class="modal-side-item">
+                            <span class="side-label">Key Themes</span>
+                            <div class="side-tags" id="modal-themes"></div>
+                        </div>
+
+                        <!-- 5. MOOD & TONE -->
+                        <div class="modal-side-item">
+                            <span class="side-label">Mood & Tone</span>
+                            <div class="side-tags" id="modal-moods"></div>
+                        </div>
+
+                        <!-- 14. ADVANCED DISCOVERY METADATA -->
+                        <div class="modal-side-item advanced-meta">
+                            <span class="side-label">Pacing</span>
+                            <span class="side-value highlight" id="modal-pacing"></span>
+                        </div>
+                        <div class="modal-side-item advanced-meta">
+                            <span class="side-label">Complexity</span>
+                            <span class="side-value highlight" id="modal-complexity"></span>
+                        </div>
+                        <div class="modal-side-item advanced-meta">
+                            <span class="side-label">World Building</span>
+                            <span class="side-value highlight" id="modal-world"></span>
+                        </div>
+                        <div class="modal-side-item advanced-meta">
+                            <span class="side-label">Action Level</span>
+                            <span class="side-value highlight" id="modal-action"></span>
+                        </div>
+
+                        <!-- 8. CONTENT ADVISORY (Full) -->
+                        <div class="modal-side-item advisory-box">
+                            <span class="side-label">Content Advisory</span>
+                            <div class="advisory-row"><span>Violence:</span> <span id="adv-violence"></span></div>
+                            <div class="advisory-row"><span>Language:</span> <span id="adv-language"></span></div>
+                            <div class="advisory-row"><span>Adult Content:</span> <span id="adv-adult"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -134,7 +273,58 @@
             <p class="site-footer__copy">&copy; 2026 Aurora AI &mdash; Intelligent Cinematic Discovery.</p>
         </div>
     </footer>
+    <!-- SECURE LOGIN OVERLAY -->
+    <div id="login-overlay" class="login-overlay active" style="display: flex;">
+        <div class="login-box">
+            <h2>AURORA SECURE ACCESS</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Authenticate</button>
+            </form>
+            <div id="login-error" style="color: #ff4d4d; margin-top: 10px; font-size: 0.9rem; display: none;">Invalid credentials</div>
+        </div>
+    </div>
 
+    <div class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer__header">
+            <div class="sidebar__logo">
+                <span class="sidebar__logo-icon">✦</span>
+                <span class="sidebar__logo-text">AURORA</span>
+            </div>
+            <button id="mobile-drawer-close" class="mobile-drawer__close" aria-label="Close Menu">✕</button>
+        </div>
+        <div class="mobile-drawer__content">
+            <a href="#" class="mobile-drawer__link">👤 Account</a>
+            <a href="#" class="mobile-drawer__link">⚙️ Settings</a>
+            <a href="#" class="mobile-drawer__link">❓ Help Centre</a>
+            <div class="profile-dropdown__sep" style="margin: 20px 0;"></div>
+            <a href="#" class="mobile-drawer__link" style="color: #ef4444;">🚪 Sign Out</a>
+        </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottom-nav">
+        <a href="#" class="bottom-nav__item active" data-page="home" onclick="navigateTo('home');return false;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="#" class="bottom-nav__item" data-page="categories" onclick="navigateTo('categories');return false;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Categories</span>
+        </a>
+        <a href="#" class="bottom-nav__item" data-page="favorites" onclick="navigateTo('my-list');return false;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span>Favorites</span>
+        </a>
+        <a href="#" class="bottom-nav__item" data-page="library" onclick="navigateTo('my-list');return false;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Library</span>
+        </a>
+        <a href="#" class="bottom-nav__item" id="mobile-search-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Search</span>
+        </a>
+    </nav>
     <script src="app.js"></script>
 </body>
 </html>
