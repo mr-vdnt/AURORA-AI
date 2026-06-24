@@ -20,12 +20,12 @@
   --text-muted:     #666666;
 
   /* Aurora Accents */
-  --aurora-purple: #8B5CF6;
-  --aurora-blue:   #3B82F6;
-  --aurora-cyan:   #06B6D4;
-  --aurora-grad:   linear-gradient(135deg, #8B5CF6, #3B82F6, #06B6D4);
-  --match-green:   #46D369;
-  --match-gold:    #FFD700;
+  --aurora-purple: #E50914; /* Netflix Red */
+  --aurora-blue:   #5AA8FF; /* AI Accent Aurora Blue */
+  --aurora-cyan:   #00D8F6; /* Premium Cyan */
+  --aurora-grad:   linear-gradient(135deg, #E50914, #5AA8FF, #00D8F6);
+  --match-green:   #34C759; /* Apple Success Green */
+  --match-gold:    #F5C518; /* IMDb rating Gold */
 
   /* Glass */
   --glass-bg:       rgba(255,255,255,0.04);

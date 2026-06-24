@@ -1161,6 +1161,22 @@ async function loadHomePage() {
     window.shownItems = []; 
 
     await fetchAndRender('Top Picks For You', 'Top Picks For You', true);
+
+    // Continue Watching Row (if user has viewed history)
+    const history = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    if (history.length > 0) {
+        appendRow('Continue Watching', history);
+    }
+
+    // Because You Watched dynamic recommendation row
+    if (history.length > 0) {
+        const seed = history[0];
+        const recs = getSimilarRecommendations(seed).map(r => r.movie);
+        if (recs && recs.length > 0) {
+            appendRow(`Because You Watched ${seed.title}`, recs.slice(0, 10));
+        }
+    }
+
     await fetchAndRender('Trending Now', 'Trending Now', false);
     await fetchAndRender('Mind-Bending Sci-Fi', 'Mind-Bending Sci-Fi', false);
 
