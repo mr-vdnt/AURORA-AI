@@ -33,6 +33,332 @@ const modalOverlay  = document.getElementById('movie-detail-modal');
 const modalBody     = document.getElementById('modal-body');
 const closeModalBtn = document.getElementById('close-modal-btn');
 
+// ── Fallback Database ──────────────────────────────────────────────────
+const FALLBACK_MOVIES = [
+    {
+        item_id: 1,
+        title: "Spider-Man: No Way Home",
+        poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+        backdrop_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+        overview: "Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man.",
+        rich_metadata: {
+            title: "Spider-Man: No Way Home",
+            year: "2021",
+            match_percentage: 95,
+            rating: 8.3,
+            runtime: "148 min",
+            director: "Jon Watts",
+            genres: ["Action", "Adventure", "Science Fiction"],
+            tags: ["Action", "Adventure", "Science Fiction"],
+            audience_type: "Family/General",
+            story_summary: "Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man.",
+            why_recommended: "Recommended because it matches your preferred genres of action and adventure with high thematic similarity.",
+            themes: ["Identity", "Heroism", "Multiverse", "Sacrifice"],
+            moods: ["Exciting", "Emotional", "Adventurous"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "High",
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 88 },
+                { item_id: 5, title: "The King's Man", poster_url: "https://image.tmdb.org/t/p/original/aq4Pwv5Xeuvj6HZKtxyd23e6bE9.jpg", score: 82 }
+            ]
+        }
+    },
+    {
+        item_id: 2,
+        title: "The Batman",
+        poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+        backdrop_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+        overview: "In his second year of fighting crime, Batman uncovers corruption in Gotham City that connects to his own family while facing a serial killer known as the Riddler.",
+        rich_metadata: {
+            title: "The Batman",
+            year: "2022",
+            match_percentage: 92,
+            rating: 8.1,
+            runtime: "176 min",
+            director: "Matt Reeves",
+            genres: ["Crime", "Mystery", "Thriller"],
+            tags: ["Crime", "Mystery", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "In his second year of fighting crime, Batman uncovers corruption in Gotham City that connects to his own family while facing a serial killer known as the Riddler.",
+            why_recommended: "Recommended because it aligns with your interest in gritty crime thrillers and mystery-solving arcs.",
+            themes: ["Vengeance", "Corruption", "Justice", "Secrets"],
+            moods: ["Gritty", "Dark", "Suspenseful", "Intense"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Exceptional",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: true,
+            similar_movies: [
+                { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 85 },
+                { item_id: 3, title: "No Exit", poster_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg", score: 80 }
+            ]
+        }
+    },
+    {
+        item_id: 3,
+        title: "No Exit",
+        poster_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg",
+        backdrop_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg",
+        overview: "Stranded at a rest stop in the mountains during a blizzard, a recovering addict discovers a kidnapped child hidden in a car belonging to one of the people inside the building.",
+        rich_metadata: {
+            title: "No Exit",
+            year: "2022",
+            match_percentage: 88,
+            rating: 6.3,
+            runtime: "95 min",
+            director: "Damien Power",
+            genres: ["Thriller"],
+            tags: ["Thriller"],
+            audience_type: "Adult",
+            story_summary: "Stranded at a rest stop in the mountains during a blizzard, a recovering addict discovers a kidnapped child hidden in a car belonging to one of the people inside the building.",
+            why_recommended: "Recommended because it fits your preference for high-stakes suspense thrillers.",
+            themes: ["Survival", "Deception", "Trust"],
+            moods: ["Suspenseful", "Intense", "Gritty"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Standard",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: true,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 79 }
+            ]
+        }
+    },
+    {
+        item_id: 4,
+        title: "Encanto",
+        poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg",
+        backdrop_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg",
+        overview: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place.",
+        rich_metadata: {
+            title: "Encanto",
+            year: "2021",
+            match_percentage: 94,
+            rating: 7.7,
+            runtime: "102 min",
+            director: "Jared Bush",
+            genres: ["Animation", "Comedy", "Family", "Fantasy"],
+            tags: ["Animation", "Comedy", "Family", "Fantasy"],
+            audience_type: "Family Friendly",
+            story_summary: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place.",
+            why_recommended: "Recommended because you enjoy heartwarming, magical family animations.",
+            themes: ["Family", "Destiny", "Identity", "Acceptance"],
+            moods: ["Lighthearted", "Emotional", "Captivating"],
+            pacing: "Steady",
+            complexity: "Low",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Low",
+            language_severity: "None",
+            adult: false,
+            similar_movies: [
+                { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 83 }
+            ]
+        }
+    },
+    {
+        item_id: 5,
+        title: "The King's Man",
+        poster_url: "https://image.tmdb.org/t/p/original/aq4Pwv5Xeuvj6HZKtxyd23e6bE9.jpg",
+        backdrop_url: "https://image.tmdb.org/t/p/original/aq4Pwv5Xeuvj6HZKtxyd23e6bE9.jpg",
+        overview: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them.",
+        rich_metadata: {
+            title: "The King's Man",
+            year: "2021",
+            match_percentage: 85,
+            rating: 7.0,
+            runtime: "131 min",
+            director: "Matthew Vaughn",
+            genres: ["Action", "Adventure", "Thriller", "War"],
+            tags: ["Action", "Adventure", "Thriller", "War"],
+            audience_type: "Adult",
+            story_summary: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them.",
+            why_recommended: "Recommended because of its historical context and high-octane spy adventure themes.",
+            themes: ["War & Peace", "Duty", "Honor", "Survival"],
+            moods: ["Epic", "Exciting", "Intense"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "High",
+            violence_level: "High",
+            language_severity: "Moderate",
+            adult: true,
+            similar_movies: [
+                { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 82 }
+            ]
+        }
+    },
+    {
+        item_id: 10,
+        title: "Interstellar",
+        poster_url: "https://placehold.co/400x600/111/333?text=Interstellar",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Interstellar",
+        overview: "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
+        rich_metadata: {
+            title: "Interstellar",
+            year: "2014",
+            match_percentage: 98,
+            rating: 8.6,
+            runtime: "169 min",
+            director: "Christopher Nolan",
+            genres: ["Science Fiction", "Drama", "Adventure"],
+            tags: ["Science Fiction", "Drama", "Adventure"],
+            audience_type: "General",
+            story_summary: "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
+            why_recommended: "Recommended by Aurora AI as a top pick for its breathtaking visual world and deep psychological concepts.",
+            themes: ["Space Exploration", "Survival", "Time", "Humanity", "Sacrifice"],
+            moods: ["Thought-provoking", "Epic", "Emotional"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Exceptional",
+            action_level: "Medium",
+            violence_level: "Low",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 87 }
+            ]
+        }
+    },
+    {
+        item_id: 11,
+        title: "Stranger Things",
+        poster_url: "https://placehold.co/400x600/111/333?text=Stranger+Things",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Stranger+Things",
+        overview: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
+        rich_metadata: {
+            title: "Stranger Things",
+            year: "2016",
+            match_percentage: 96,
+            rating: 8.8,
+            runtime: "Series",
+            director: "The Duffer Brothers",
+            genres: ["Drama", "Science Fiction", "Mystery"],
+            tags: ["Drama", "Science Fiction", "Mystery"],
+            audience_type: "General",
+            story_summary: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
+            why_recommended: "Recommended for its thrilling nostalgia and suspenseful supernatural mystery.",
+            themes: ["Friendship", "Good vs Evil", "Mystery", "Survival"],
+            moods: ["Atmospheric", "Suspenseful", "Captivating"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 88 }
+            ]
+        }
+    },
+    {
+        item_id: 12,
+        title: "Wednesday",
+        poster_url: "https://placehold.co/400x600/111/333?text=Wednesday",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Wednesday",
+        overview: "A sleuthing, supernaturally infused mystery charting Wednesday Addams' years as a student at Nevermore Academy.",
+        rich_metadata: {
+            title: "Wednesday",
+            year: "2022",
+            match_percentage: 91,
+            rating: 8.2,
+            runtime: "Series",
+            director: "Tim Burton",
+            genres: ["Comedy", "Fantasy", "Mystery"],
+            tags: ["Comedy", "Fantasy", "Mystery"],
+            audience_type: "General",
+            story_summary: "A sleuthing, supernaturally infused mystery charting Wednesday Addams' years as a student at Nevermore Academy.",
+            why_recommended: "Recommended for its dark wit and gothic mystery themes.",
+            themes: ["Mystery", "Good vs Evil", "Destiny"],
+            moods: ["Dark", "Lighthearted", "Atmospheric"],
+            pacing: "Steady",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 80 }
+            ]
+        }
+    },
+    {
+        item_id: 13,
+        title: "Dune",
+        poster_url: "https://placehold.co/400x600/111/333?text=Dune",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Dune",
+        overview: "Paul Atreides, a brilliant and gifted young man born into a great destiny beyond his understanding, must travel to the most dangerous planet in the universe to ensure the future of his family and his people.",
+        rich_metadata: {
+            title: "Dune",
+            year: "2021",
+            match_percentage: 95,
+            rating: 8.0,
+            runtime: "155 min",
+            director: "Denis Villeneuve",
+            genres: ["Science Fiction", "Adventure", "Drama"],
+            tags: ["Science Fiction", "Adventure", "Drama"],
+            audience_type: "General",
+            story_summary: "Paul Atreides, a brilliant and gifted young man born into a great destiny beyond his understanding, must travel to the most dangerous planet in the universe to ensure the future of his family and his people.",
+            why_recommended: "Recommended for its massive epic scale, complex political intrigue, and stellar sound design.",
+            themes: ["Destiny", "Survival", "War & Peace", "Humanity"],
+            moods: ["Epic", "Atmospheric", "Thought-Provoking"],
+            pacing: "Slow Burn",
+            complexity: "High",
+            world_building: "Exceptional",
+            action_level: "High",
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 10, title: "Interstellar", poster_url: "https://placehold.co/400x600/111/333?text=Interstellar", score: 92 }
+            ]
+        }
+    },
+    {
+        item_id: 14,
+        title: "The Grand Budapest Hotel",
+        poster_url: "https://placehold.co/400x600/111/333?text=Budapest+Hotel",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Budapest+Hotel",
+        overview: "The writer relates his adventures at a renowned European resort hotel between the first and second World Wars with a concierge who is wrongly framed for murder.",
+        rich_metadata: {
+            title: "The Grand Budapest Hotel",
+            year: "2014",
+            match_percentage: 89,
+            rating: 8.0,
+            runtime: "99 min",
+            director: "Wes Anderson",
+            genres: ["Comedy", "Drama"],
+            tags: ["Comedy", "Drama"],
+            audience_type: "General",
+            story_summary: "The writer relates his adventures at a renowned European resort hotel between the first and second World Wars with a concierge who is wrongly framed for murder.",
+            why_recommended: "Recommended for its distinct visual style, quirky humor, and stellar ensemble cast.",
+            themes: ["Friendship", "Loyalty", "Mystery"],
+            moods: ["Lighthearted", "Captivating", "Stylized"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Mild",
+            language_severity: "Moderate",
+            adult: false,
+            similar_movies: [
+                { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 81 }
+            ]
+        }
+    }
+];
+
 // ── State ─────────────────────────────────────────────────────────────
 let globalMovies = [];
 let myList = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
@@ -363,31 +689,51 @@ async function loadCategoryPage(mainQuery, extraQueries, pageTitle) {
 }
 
 async function fetchAndRender(query, rowTitle, isHero = false) {
+    let movies = [];
     try {
         const resp = await authFetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query, exclude_ids: window.shownItems || [] })
         });
-        const data = await resp.json();
-        let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
-        if (movies && movies.length > 0) {
-            movies.forEach(m => {
-                if (!window.shownItems.includes(m.item_id)) {
-                    window.shownItems.push(m.item_id);
-                }
-            });
-            globalMovies = [...globalMovies, ...movies];
-            
-            if (isHero && !heroSection.innerHTML) {
-                renderHero(movies[0]);
-                appendRow(rowTitle, movies.slice(1));
-            } else {
-                appendRow(rowTitle, movies);
-            }
-            }
+        if (resp.ok) {
+            const data = await resp.json();
+            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
         }
-    } catch (e) { /* silently skip failed row */ }
+    } catch (e) {
+        console.warn(`Failed to fetch for row '${rowTitle}', attempting fallback. Error:`, e);
+    }
+
+    // Fallback logic if we have no movies or empty results
+    if (!movies || !Array.isArray(movies) || movies.length === 0) {
+        const qLower = query.toLowerCase();
+        let filtered = FALLBACK_MOVIES.filter(m => {
+            return m.rich_metadata.genres.some(g => qLower.includes(g.toLowerCase()) || g.toLowerCase().includes(qLower)) ||
+                   m.overview.toLowerCase().includes(qLower) ||
+                   m.title.toLowerCase().includes(qLower);
+        });
+        
+        if (filtered.length === 0) {
+            filtered = FALLBACK_MOVIES.sort(() => 0.5 - Math.random()).slice(0, 5);
+        }
+        movies = filtered;
+    }
+
+    if (movies && movies.length > 0) {
+        movies.forEach(m => {
+            if (!window.shownItems.includes(m.item_id)) {
+                window.shownItems.push(m.item_id);
+            }
+        });
+        globalMovies = [...globalMovies, ...movies];
+        
+        if (isHero && !heroSection.innerHTML) {
+            renderHero(movies[0]);
+            appendRow(rowTitle, movies.slice(1));
+        } else {
+            appendRow(rowTitle, movies);
+        }
+    }
 }
 
 // ── My List ───────────────────────────────────────────────────────────
@@ -511,29 +857,46 @@ async function loadSingleCategoryPage(categoryName) {
         <div class="card-wrap skeleton" style="height: 220px; border-radius: var(--r-md); aspect-ratio: 2/3; width: 100%;"></div>
     `).join('');
     
+    let movies = [];
     try {
         const resp = await authFetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: categoryName, exclude_ids: [] })
         });
-        const data = await resp.json();
-        let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
-        if (movies && movies.length > 0) {
-            gridResults.innerHTML = '';
-            globalMovies = [...globalMovies, ...movies];
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.innerHTML = createMovieCardHTML(movie);
-                const card3d = card.querySelector('.card-3d');
-                if (card3d) attachTilt(card3d);
-                gridResults.appendChild(card.firstElementChild);
-            });
-        } else {
-            gridResults.innerHTML = `<div class="no-results" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No titles found for ${categoryName}.</div>`;
+        if (resp.ok) {
+            const data = await resp.json();
+            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
         }
     } catch(e) {
-        gridResults.innerHTML = `<div class="no-results" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Error loading titles. Please try again.</div>`;
+        console.warn(`Category detail API error, utilizing fallbacks for '${categoryName}':`, e);
+    }
+    
+    if (!movies || !Array.isArray(movies) || movies.length === 0) {
+        const catLower = categoryName.toLowerCase();
+        movies = FALLBACK_MOVIES.filter(m => {
+            return m.rich_metadata.genres.some(g => g.toLowerCase().includes(catLower) || catLower.includes(g.toLowerCase())) ||
+                   m.title.toLowerCase().includes(catLower) ||
+                   m.overview.toLowerCase().includes(catLower);
+        });
+        
+        if (movies.length === 0) {
+            movies = FALLBACK_MOVIES.slice(0, 6);
+        }
+    }
+    
+    if (movies && movies.length > 0) {
+        gridResults.innerHTML = '';
+        globalMovies = [...globalMovies, ...movies];
+        movies.forEach(movie => {
+            const card = document.createElement('div');
+            card.innerHTML = createMovieCardHTML(movie);
+            const card3d = card.querySelector('.card-3d');
+            if (card3d) attachTilt(card3d);
+            gridResults.appendChild(card.firstElementChild);
+        });
+    } else {
+        gridResults.innerHTML = `<div class="no-results" style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No titles found for ${categoryName}.</div>`;
     }
 }
 
@@ -956,6 +1319,69 @@ function attachTilt(card) {
 // ══════════════════════════════════════════════════════════════════════
 //  DETAIL MODAL
 // ══════════════════════════════════════════════════════════════════════
+function renderModalData(m, id) {
+    document.getElementById('modal-title').textContent = m.title || 'Unknown';
+    
+    const posterUrl = m.poster_url || placeholder(m.title);
+    const bgUrl = m.backdrop_url || posterUrl;
+    document.getElementById('modal-poster').src = posterUrl;
+    document.getElementById('modal-backdrop').style.backgroundImage = `url('${bgUrl}')`;
+    
+    document.getElementById('modal-match').textContent = `${m.match_percentage || 85}% Match`;
+    document.getElementById('modal-year').textContent = m.year || '';
+    document.getElementById('modal-rating').textContent = m.rating ? `IMDB ${m.rating}` : '';
+    document.getElementById('modal-runtime').textContent = m.runtime || '';
+    
+    document.getElementById('modal-genres').innerHTML = (m.genres || []).map(g => `<span>${g}</span>`).join('');
+    document.getElementById('modal-audience').textContent = m.audience_type || 'General';
+    
+    document.getElementById('modal-synopsis').textContent = m.story_summary || 'No overview available.';
+    document.getElementById('modal-why').textContent = m.why_recommended || 'Highly correlated with your preferences.';
+    
+    document.getElementById('modal-director').textContent = m.director || 'Unknown';
+    
+    document.getElementById('modal-themes').innerHTML = (m.themes || []).map(t => `<span>${t}</span>`).join('');
+    document.getElementById('modal-moods').innerHTML = (m.moods || []).map(t => `<span>${t}</span>`).join('');
+    
+    document.getElementById('modal-pacing').textContent = m.pacing || 'Steady';
+    document.getElementById('modal-complexity').textContent = m.complexity || 'Medium';
+    document.getElementById('modal-world').textContent = m.world_building || 'Standard';
+    document.getElementById('modal-action').textContent = m.action_level || 'Medium';
+    
+    document.getElementById('adv-violence').textContent = m.violence_level || 'Low';
+    document.getElementById('adv-language').textContent = m.language_severity || 'Mild';
+    document.getElementById('adv-adult').textContent = m.adult ? 'Yes' : 'No';
+    
+    const simContainer = document.getElementById('modal-similar');
+    if (m.similar_movies && m.similar_movies.length > 0) {
+        simContainer.innerHTML = m.similar_movies.map(sm => `
+            <div class="sim-card" onclick="openModal(${sm.item_id})">
+                <img src="${sm.poster_url || placeholder(sm.title)}" alt="${sm.title}" class="sim-poster">
+                <div class="sim-title">${sm.title}</div>
+                <div class="sim-match">${sm.score}% Match</div>
+            </div>
+        `).join('');
+    } else {
+        simContainer.innerHTML = '<p>No similar titles found.</p>';
+    }
+
+    const addBtn = document.getElementById('modal-add-list');
+    const saved = isInMyList(id);
+    addBtn.innerHTML = saved ? `✓ Added` : `+ Add to List`;
+    addBtn.onclick = () => {
+        toggleSave(id);
+        addBtn.innerHTML = isInMyList(id) ? `✓ Added` : `+ Add to List`;
+    };
+
+    addToHistory({
+        item_id: id,
+        title: m.title || 'Unknown',
+        poster_url: posterUrl,
+        backdrop_url: bgUrl,
+        rich_metadata: m
+    });
+}
+
 async function openModal(id) {
     authFetch('/events/ingest', {
         method: 'POST',
@@ -976,74 +1402,50 @@ async function openModal(id) {
 
     try {
         const resp = await authFetch(`/movie/${id}`);
-        const m = await resp.json();
-        
-        if (m.error) throw new Error(m.error);
-
-        document.getElementById('modal-title').textContent = m.title || 'Unknown';
-        
-        const posterUrl = m.poster_url || placeholder(m.title);
-        const bgUrl = m.backdrop_url || posterUrl;
-        document.getElementById('modal-poster').src = posterUrl;
-        document.getElementById('modal-backdrop').style.backgroundImage = `url('${bgUrl}')`;
-        
-        document.getElementById('modal-match').textContent = `${m.match_percentage || 85}% Match`;
-        document.getElementById('modal-year').textContent = m.year || '';
-        document.getElementById('modal-rating').textContent = m.rating ? `IMDB ${m.rating}` : '';
-        document.getElementById('modal-runtime').textContent = m.runtime || '';
-        
-        document.getElementById('modal-genres').innerHTML = (m.genres || []).map(g => `<span>${g}</span>`).join('');
-        document.getElementById('modal-audience').textContent = m.audience_type || 'General';
-        
-        document.getElementById('modal-synopsis').textContent = m.story_summary || 'No overview available.';
-        document.getElementById('modal-why').textContent = m.why_recommended || 'Highly correlated with your preferences.';
-        
-        document.getElementById('modal-director').textContent = m.director || 'Unknown';
-        
-        document.getElementById('modal-themes').innerHTML = (m.themes || []).map(t => `<span>${t}</span>`).join('');
-        document.getElementById('modal-moods').innerHTML = (m.moods || []).map(t => `<span>${t}</span>`).join('');
-        
-        document.getElementById('modal-pacing').textContent = m.pacing || 'Steady';
-        document.getElementById('modal-complexity').textContent = m.complexity || 'Medium';
-        document.getElementById('modal-world').textContent = m.world_building || 'Standard';
-        document.getElementById('modal-action').textContent = m.action_level || 'Medium';
-        
-        document.getElementById('adv-violence').textContent = m.violence_level || 'Low';
-        document.getElementById('adv-language').textContent = m.language_severity || 'Mild';
-        document.getElementById('adv-adult').textContent = m.adult ? 'Yes' : 'No';
-        
-        const simContainer = document.getElementById('modal-similar');
-        if (m.similar_movies && m.similar_movies.length > 0) {
-            simContainer.innerHTML = m.similar_movies.map(sm => `
-                <div class="sim-card" onclick="openModal(${sm.item_id})">
-                    <img src="${sm.poster_url || placeholder(sm.title)}" alt="${sm.title}" class="sim-poster">
-                    <div class="sim-title">${sm.title}</div>
-                    <div class="sim-match">${sm.score}% Match</div>
-                </div>
-            `).join('');
-        } else {
-            simContainer.innerHTML = '<p>No similar titles found.</p>';
+        let m;
+        if (resp.ok) {
+            m = await resp.json();
         }
-
-        const addBtn = document.getElementById('modal-add-list');
-        const saved = isInMyList(id);
-        addBtn.innerHTML = saved ? `✓ Added` : `+ Add to List`;
-        addBtn.onclick = () => {
-            toggleSave(id);
-            addBtn.innerHTML = isInMyList(id) ? `✓ Added` : `+ Add to List`;
-        };
-
-        addToHistory({
-            item_id: id,
-            title: m.title || 'Unknown',
-            poster_url: posterUrl,
-            backdrop_url: bgUrl,
-            rich_metadata: m
-        });
-
+        if (!m || m.error) {
+            throw new Error((m && m.error) || 'Failed to fetch details');
+        }
+        renderModalData(m, id);
     } catch (err) {
-        document.getElementById('modal-title').textContent = 'Error loading details.';
-        document.getElementById('modal-synopsis').textContent = 'Could not fetch data.';
+        console.warn(`Movie detail API failed for ID ${id}, using local fallback:`, err);
+        const movie = globalMovies.find(item => item.item_id === id) || FALLBACK_MOVIES.find(item => item.item_id === id);
+        if (movie) {
+            const m = movie.rich_metadata || {};
+            const fallbackDetails = {
+                title: movie.title || m.title || "Unknown",
+                poster_url: movie.poster_url || m.poster_url || placeholder(movie.title),
+                backdrop_url: movie.backdrop_url || m.backdrop_url || movie.poster_url,
+                match_percentage: m.match_percentage || 85,
+                year: m.year || "2022",
+                rating: m.rating || 8.0,
+                runtime: m.runtime || "120 min",
+                genres: m.genres || m.tags || ["Drama"],
+                audience_type: m.audience_type || "General",
+                story_summary: movie.overview || m.story_summary || "Cinematic details served from local cache.",
+                why_recommended: m.why_recommended || "Highly correlated with your preferences.",
+                director: m.director || "Unknown Director",
+                themes: m.themes || ["Cinema"],
+                moods: m.moods || ["Captivating"],
+                pacing: m.pacing || "Steady",
+                complexity: m.complexity || "Medium",
+                world_building: m.world_building || "Standard",
+                action_level: m.action_level || "Medium",
+                violence_level: m.violence_level || "Low",
+                language_severity: m.language_severity || "Mild",
+                adult: m.adult || false,
+                similar_movies: m.similar_movies || [
+                    { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 85 }
+                ]
+            };
+            renderModalData(fallbackDetails, id);
+        } else {
+            document.getElementById('modal-title').textContent = 'Error loading details.';
+            document.getElementById('modal-synopsis').textContent = 'Could not fetch data.';
+        }
     }
 }
 
