@@ -11,7 +11,7 @@ const profileTrig   = document.getElementById('profile-trigger');
 const userIdInput   = document.getElementById('user-id-input');
 const topbar        = document.getElementById('topbar');
 
-const searchTrigger = document.getElementById('search-trigger');
+const searchTrigger = document.getElementById('topbar-search-trigger') || document.getElementById('search-trigger');
 const searchOverlay = document.getElementById('search-overlay');
 const searchClose   = document.getElementById('search-close');
 const searchInput   = document.getElementById('search-input');
@@ -504,8 +504,29 @@ window.applyTheme = function(themeName) {
     localStorage.setItem('aurora_theme', themeName);
 };
 
+window.updateFormatTabs = function() {
+    const tabs = ['all', 'movie', 'series'];
+    tabs.forEach(t => {
+        const tabEl = document.getElementById(`format-tab-${t}`);
+        if (tabEl) {
+            tabEl.classList.toggle('active', window.currentFormat === t);
+        }
+    });
+    // Also update dynamic tabs in content area
+    const dynamicContainer = document.querySelector('#content-rows .format-filter-container');
+    if (dynamicContainer) {
+        const buttons = dynamicContainer.querySelectorAll('.format-tab');
+        buttons.forEach(btn => {
+            const onclickStr = btn.getAttribute('onclick') || '';
+            const isActive = onclickStr.includes(`'${window.currentFormat}'`) || onclickStr.includes(`"${window.currentFormat}"`);
+            btn.classList.toggle('active', isActive);
+        });
+    }
+};
+
 window.setDiscoveryFormat = function(format) {
     window.currentFormat = format;
+    window.updateFormatTabs();
     if (currentPage === 'home') {
         loadHomePage();
     } else if (currentPage === 'categories') {
@@ -541,6 +562,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const savedTheme = localStorage.getItem('aurora_theme') || 'neon';
     applyTheme(savedTheme);
+    
+    // Bind all logo click events for robust Home navigation
+    document.querySelectorAll('.sidebar__logo, .topbar__logo, .drawer__logo, .site-footer__brand').forEach(logo => {
+        logo.style.cursor = 'pointer';
+        logo.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo('home');
+            if (typeof closeDrawer === 'function') closeDrawer();
+        });
+    });
     
     navigateTo('home');
 });
@@ -731,6 +762,59 @@ function executeSearch(query) {
 aiTrigger.addEventListener('click', () => aiPanel.classList.add('open'));
 aiPanelClose.addEventListener('click', () => aiPanel.classList.remove('open'));
 
+function getMovieCast(title) {
+    const titleLower = (title || '').toLowerCase();
+    if (titleLower.includes('spider-man')) return 'Tom Holland, Zendaya, Benedict Cumberbatch, Jacob Batalon';
+    if (titleLower.includes('batman')) return 'Robert Pattinson, Zoë Kravitz, Paul Dano, Jeffrey Wright';
+    if (titleLower.includes('no exit')) return 'Havana Rose Liu, Danny Ramirez, David Rysdahl, Mila Harris';
+    if (titleLower.includes('encanto')) return 'Stephanie Beatriz, María Cecilia Botero, John Leguizamo, Mauro Castillo';
+    if (titleLower.includes('king\'s man')) return 'Ralph Fiennes, Gemma Arterton, Rhys Ifans, Matthew Goode';
+    if (titleLower.includes('interstellar')) return 'Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin';
+    if (titleLower.includes('stranger things')) return 'Winona Ryder, David Harbour, Millie Bobby Brown, Finn Wolfhard';
+    if (titleLower.includes('wednesday')) return 'Jenna Ortega, Gwendoline Christie, Riki Lindhome, Jamie McShane';
+    if (titleLower.includes('dune')) return 'Timothée Chalamet, Rebecca Ferguson, Oscar Isaac, Josh Brolin';
+    if (titleLower.includes('budapest')) return 'Ralph Fiennes, F. Murray Abraham, Mathieu Amalric, Adrien Brody';
+    return 'Leading Cast Members, Supporting Ensemble';
+}
+
+function getMovieLanguages(movie) {
+    const m = movie.rich_metadata || {};
+    if (m.languages) return m.languages;
+    const titleLower = (movie.title || '').toLowerCase();
+    if (titleLower.includes('encanto')) return 'English, Spanish';
+    if (titleLower.includes('korean') || titleLower.includes('k-drama')) return 'Korean (English Subtitles)';
+    return 'English, Spanish, French';
+}
+
+function createBotRecommendationHTML(movie) {
+    const m = movie.rich_metadata || {};
+    const title = movie.title || 'Unknown';
+    const poster = movie.poster_url || placeholder(title);
+    const score = m.match_percentage || randScore();
+    const rating = m.rating || '8.0';
+    const genres = (m.genres || m.tags || ['Drama']).slice(0, 3).join(', ');
+    const runtime = m.runtime || '120 min';
+    const reason = m.why_recommended || 'Highly matched to your interest and viewing behavior.';
+    
+    return `
+        <div class="chat-rec-card" onclick="openModal(${movie.item_id})" style="display: flex; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 10px; margin-top: 10px; cursor: pointer; transition: transform var(--t-fast); align-items: flex-start;">
+            <img src="${poster}" alt="${title}" style="width: 70px; aspect-ratio: 2/3; object-fit: cover; border-radius: var(--r-sm); border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-weight: 700; color: white; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;">${title}</div>
+                <div style="display: flex; gap: 8px; align-items: center; font-size: 0.75rem; flex-wrap: wrap;">
+                    <span style="color: var(--match-green); font-weight: 700;">★ ${score}% Match</span>
+                    <span style="color: #f5c518; font-weight: 700;">IMDb ${rating}</span>
+                    <span style="color: var(--text-muted);">${runtime}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--aurora-cyan); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${genres}</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3; margin-top: 2px; text-align: left;">
+                    <strong>Reason:</strong> ${reason}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function addMsg(text, isUser) {
     const d = document.createElement('div');
     d.className = `ai-msg ${isUser ? 'ai-msg--user' : 'ai-msg--bot'}`;
@@ -742,7 +826,7 @@ function addMsg(text, isUser) {
 async function handleSend() {
     const query = chatInput.value.trim();
     if (!query) return;
-    const userId = parseInt(userIdInput.value) || 32;
+    const currentUserId = (userIdInput && parseInt(userIdInput.value)) || userId || 32;
 
     addMsg(query, true);
     chatInput.value = '';
@@ -754,7 +838,7 @@ async function handleSend() {
         const resp = await fetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, query })
+            body: JSON.stringify({ user_id: currentUserId, query })
         });
         const data = await resp.json();
 
@@ -772,7 +856,12 @@ async function handleSend() {
             else if (data.intent === 'genre_search') rowTitle = 'Genre Discovery';
 
             renderResults(movies, rowTitle);
-            addMsg(`Found ${movies.length} titles for you.`, false);
+            
+            let responseHTML = `Found ${movies.length} titles for you:<br>`;
+            movies.slice(0, 3).forEach(m => {
+                responseHTML += createBotRecommendationHTML(m);
+            });
+            addMsg(responseHTML, false);
         } else {
             contentRows.innerHTML = '';
             addMsg("I couldn't find anything matching that.", false);
@@ -831,6 +920,15 @@ function navigateTo(page) {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    // Show persistent format filters ONLY on Home or Categories pages
+    const homeFilter = document.getElementById('home-filter-section');
+    if (homeFilter) {
+        homeFilter.style.display = (page === 'home' || page === 'categories') ? 'block' : 'none';
+        if (typeof window.updateFormatTabs === 'function') {
+            window.updateFormatTabs();
+        }
+    }
+
     switch (page) {
         case 'home':
             loadHomePage();
@@ -838,21 +936,143 @@ function navigateTo(page) {
         case 'categories':
             loadCategoriesTab();
             break;
-        case 'library':
-            renderLibraryTab();
-            break;
         case 'search':
             loadSearchPage();
-            break;
-        case 'downloads':
-            renderDownloadsTab();
             break;
         case 'favorites':
         case 'my-list':
             renderFavoritesTab();
             break;
+        case 'downloads':
+            renderDownloadsTab();
+            break;
+        case 'account':
+            renderAccountTab();
+            break;
+        case 'settings':
+            renderSettingsTab();
+            break;
+        case 'assistant':
+        case 'ai-assistant':
+            if (aiPanel) aiPanel.classList.add('open');
+            navigateTo('home');
+            break;
     }
 }
+
+// ── Account & Settings Tab Pages ─────────────────────────────────────
+function renderAccountTab() {
+    heroSection.innerHTML = '';
+    heroSection.style.display = 'none';
+    contentRows.innerHTML = `
+        <div class="row-section" style="padding-top:80px; max-width:800px; margin:0 auto; padding-left: 24px; padding-right: 24px;">
+            <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:12px; color: white;">👤 Account</h1>
+            <p style="color:var(--text-muted);font-size:0.95rem;margin-bottom:32px;">Manage your membership, billing, and device settings.</p>
+            
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--r-lg); padding:30px; display:flex; flex-direction:column; gap:20px; backdrop-filter: blur(20px);">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <span style="color:var(--text-muted); font-weight:500;">Membership Tier</span>
+                    <span style="color:white; font-weight:700;">Aurora Cinematic Premium (4K UHD)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <span style="color:var(--text-muted); font-weight:500;">Current User</span>
+                    <span style="color:white; font-weight:700;">Guest User (ID: ${userId})</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <span style="color:var(--text-muted); font-weight:500;">Devices Online</span>
+                    <span style="color:white; font-weight:700;">2 Active Devices (1 Mobile, 1 Laptop)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <span style="color:var(--text-muted); font-weight:500;">Next Renewal</span>
+                    <span style="color:white; font-weight:700;">July 24, 2026 ($14.99/mo)</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderSettingsTab() {
+    heroSection.innerHTML = '';
+    heroSection.style.display = 'none';
+    
+    const autoplay = localStorage.getItem('aurora_autoplay') !== 'false';
+    const quality = localStorage.getItem('aurora_quality') || 'auto';
+    const motion = localStorage.getItem('aurora_reduced_motion') === 'true';
+    const theme = localStorage.getItem('aurora_theme') || 'neon';
+    
+    contentRows.innerHTML = `
+        <div class="row-section" style="padding-top:80px; max-width:800px; margin:0 auto; padding-left: 24px; padding-right: 24px;">
+            <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:12px; color: white;">⚙️ Settings</h1>
+            <p style="color:var(--text-muted);font-size:0.95rem;margin-bottom:32px;">Configure streaming quality, themes, and application behavior.</p>
+            
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--r-lg); padding:30px; display:flex; flex-direction:column; gap:24px; backdrop-filter: blur(20px);">
+                <div>
+                    <h3 style="color:white; margin-bottom:12px; font-size:1.1rem; font-weight: 700;">Playback & Motion</h3>
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 12px; color:var(--text-secondary);">
+                        <input type="checkbox" id="page-settings-autoplay" ${autoplay ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageSettings()">
+                        <span>Autoplay Cinematic Trailers</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
+                        <input type="checkbox" id="page-settings-motion" ${motion ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageSettings()">
+                        <span>Reduced Motion (Disable 3D tilt & scaling)</span>
+                    </label>
+                </div>
+                
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin:0;">
+                
+                <div>
+                    <h3 style="color:white; margin-bottom:12px; font-size:1.1rem; font-weight: 700;">Streaming Quality</h3>
+                    <select id="page-settings-quality" onchange="savePageSettings()" style="width: 100%; max-width: 300px; padding: 10px 14px; border-radius: var(--r-md); background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; font-size: 0.95rem; outline: none; cursor: pointer;">
+                        <option value="auto" ${quality === 'auto' ? 'selected' : ''}>Auto (Recommended)</option>
+                        <option value="4k" ${quality === '4k' ? 'selected' : ''}>4K UHD (Highest Quality)</option>
+                        <option value="1080p" ${quality === '1080p' ? 'selected' : ''}>1080p Full HD</option>
+                        <option value="data" ${quality === 'data' ? 'selected' : ''}>Data Saver (SD)</option>
+                    </select>
+                </div>
+                
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin:0;">
+                
+                <div>
+                    <h3 style="color:white; margin-bottom:12px; font-size:1.1rem; font-weight: 700;">Theme Preferences</h3>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
+                            <input type="radio" name="page-theme-choice" value="neon" ${theme === 'neon' ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageTheme('neon')">
+                            <span>Aurora Neon (Default Cyberpunk)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
+                            <input type="radio" name="page-theme-choice" value="slate" ${theme === 'slate' ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageTheme('slate')">
+                            <span>Midnight Slate (Elegant Dark)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
+                            <input type="radio" name="page-theme-choice" value="oled" ${theme === 'oled' ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageTheme('oled')">
+                            <span>OLED Black (Deep Contrast)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.savePageSettings = function() {
+    const autoplay = document.getElementById('page-settings-autoplay').checked;
+    const motion = document.getElementById('page-settings-motion').checked;
+    const quality = document.getElementById('page-settings-quality').value;
+    
+    localStorage.setItem('aurora_autoplay', autoplay);
+    localStorage.setItem('aurora_reduced_motion', motion);
+    localStorage.setItem('aurora_quality', quality);
+    
+    if (motion) {
+        document.body.classList.add('reduced-motion');
+    } else {
+        document.body.classList.remove('reduced-motion');
+    }
+};
+
+window.savePageTheme = function(theme) {
+    applyTheme(theme);
+};
 
 // ── Downloads Tab ────────────────────────────────────────────────────
 async function renderDownloadsTab() {
@@ -998,8 +1218,8 @@ async function fetchAndRender(query, rowTitle, isHero = false) {
         });
         globalMovies = [...globalMovies, ...movies];
         
-        if (isHero && !heroSection.innerHTML) {
-            renderHero(movies[0]);
+        if (isHero) {
+            renderHero(movies[0] || FALLBACK_MOVIES[0]);
             appendRow(rowTitle, movies.slice(1));
         } else {
             appendRow(rowTitle, movies);
@@ -1021,22 +1241,25 @@ window.renderFavoritesTab = function() {
     headerSec.style.paddingTop = '80px';
     headerSec.style.marginBottom = '20px';
     headerSec.innerHTML = `
-        <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:12px;">Favorites & Watchlist</h1>
+        <h1 class="row-section__title" style="font-size:2.2rem;margin-bottom:12px; color: white;">Favorites & Watchlist</h1>
         <p style="color:var(--text-muted);font-size:0.95rem;">All your saved movies, TV series, and collections in one place.</p>
     `;
     contentRows.appendChild(headerSec);
 
     if (myList.length === 0) {
         const empty = document.createElement('div');
+        empty.className = 'empty-favorites';
         empty.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;text-align:center;padding:0 20px;';
         empty.innerHTML = `
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <h2 style="font-size:1.8rem;color:var(--text-primary);margin:20px 0 10px;">Your Watchlist is Empty</h2>
-            <p style="color:var(--text-muted);max-width:400px;margin-bottom:24px;">Browse movies and series and add them to your watchlist to see them here.</p>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--aurora-cyan)" stroke-width="1.5" style="margin-bottom: 20px; filter: drop-shadow(0 0 8px rgba(6,182,212,0.4));"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <h2 style="font-size:1.8rem;color:var(--text-primary);margin:0 0 10px;">No favorites yet.</h2>
+            <p style="color:var(--text-muted);max-width:450px;margin-bottom:30px; font-size: 1rem;">Start adding movies and series to build your collection.</p>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <button onclick="navigateTo('home')" style="padding:12px 24px; border-radius: var(--r-pill); background: var(--aurora-cyan); border: none; color: black; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Movies</button>
+                <button onclick="navigateTo('categories')" style="padding:12px 24px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Categories</button>
+            </div>
         `;
         contentRows.appendChild(empty);
-        
-        fetchAndRender('Hidden Gems', 'Recommended For You');
         return;
     }
 
@@ -1101,12 +1324,6 @@ function renderCategorySelectionGrid() {
             <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Explore Hub</h1>
             <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;">Discover content by genres, themes, moods, and curated AI collections.</p>
             
-            <div class="format-filter-container">
-                <button class="format-tab ${currentFormat === 'all' ? 'active' : ''}" onclick="setDiscoveryFormat('all')">🔮 Combined Discovery</button>
-                <button class="format-tab ${currentFormat === 'movie' ? 'active' : ''}" onclick="setDiscoveryFormat('movie')">🎬 Movies Only</button>
-                <button class="format-tab ${currentFormat === 'series' ? 'active' : ''}" onclick="setDiscoveryFormat('series')">📺 TV Series Only</button>
-            </div>
-            
             <!-- Category Search Bar -->
             <div style="position: relative; margin-bottom: 28px;">
                 <input type="text" id="category-search-input" placeholder="Search categories (e.g. Sci-Fi, Dystopian, Dark...)" 
@@ -1118,41 +1335,76 @@ function renderCategorySelectionGrid() {
     `;
     
     const categoriesData = [
-        // Genres
-        { name: 'Action', grad: 'linear-gradient(135deg, #EF4444, #B91C1C)', icon: '🎬', type: 'genre' },
-        { name: 'Comedy', grad: 'linear-gradient(135deg, #F59E0B, #D97706)', icon: '😂', type: 'genre' },
-        { name: 'Sci-Fi', grad: 'linear-gradient(135deg, #8B5CF6, #4C1D95)', icon: '🚀', type: 'genre' },
-        { name: 'Horror', grad: 'linear-gradient(135deg, #374151, #111827)', icon: '👻', type: 'genre' },
-        { name: 'Drama', grad: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', icon: '🎭', type: 'genre' },
-        { name: 'Romance', grad: 'linear-gradient(135deg, #EC4899, #BE185D)', icon: '💖', type: 'genre' },
-        { name: 'Thriller', grad: 'linear-gradient(135deg, #10B981, #047857)', icon: '🕵️', type: 'genre' },
-        { name: 'Anime', grad: 'linear-gradient(135deg, #06B6D4, #0891B2)', icon: '🌸', type: 'genre' },
-        { name: 'Mystery', grad: 'linear-gradient(135deg, #EC4899, #8B5CF6)', icon: '🔍', type: 'genre' },
-        
-        // Themes
-        { name: 'Space Exploration', grad: 'linear-gradient(135deg, #4F46E5, #312E81)', icon: '🌌', type: 'theme' },
-        { name: 'Time Travel', grad: 'linear-gradient(135deg, #D97706, #78350F)', icon: '⏳', type: 'theme' },
-        { name: 'Artificial Intelligence', grad: 'linear-gradient(135deg, #0891B2, #0F766E)', icon: '🤖', type: 'theme' },
-        { name: 'Cyberpunk', grad: 'linear-gradient(135deg, #C084FC, #581C87)', icon: '🌆', type: 'theme' },
-        { name: 'Survival', grad: 'linear-gradient(135deg, #059669, #064E3B)', icon: '⛺', type: 'theme' },
-        
-        // Moods
-        { name: 'Mind-Bending', grad: 'linear-gradient(135deg, #EC4899, #8B5CF6)', icon: '🌀', type: 'mood' },
-        { name: 'Dark & Gritty', grad: 'linear-gradient(135deg, #1E293B, #0F172A)', icon: '🖤', type: 'mood' },
-        { name: 'Heartwarming', grad: 'linear-gradient(135deg, #F43F5E, #9F1239)', icon: '❤️', type: 'mood' },
-        { name: 'Thought-Provoking', grad: 'linear-gradient(135deg, #10B981, #115E59)', icon: '💭', type: 'mood' },
-        
-        // AI & Awards
-        { name: 'Hidden Gems', grad: 'linear-gradient(135deg, #14B8A6, #0F766E)', icon: '💎', type: 'ai' },
-        { name: 'Oscar Winners', grad: 'linear-gradient(135deg, #F59E0B, #78350F)', icon: '🏆', type: 'award' }
+        // Movie genres (36)
+        { name: 'Action', grad: 'linear-gradient(135deg, #EF4444, #B91C1C)', icon: '🎬', type: 'movie' },
+        { name: 'Adventure', grad: 'linear-gradient(135deg, #F59E0B, #D97706)', icon: '🧭', type: 'movie' },
+        { name: 'Animation', grad: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', icon: '🧸', type: 'movie' },
+        { name: 'Biography', grad: 'linear-gradient(135deg, #10B981, #047857)', icon: '📜', type: 'movie' },
+        { name: 'Comedy', grad: 'linear-gradient(135deg, #EC4899, #BE185D)', icon: '😂', type: 'movie' },
+        { name: 'Crime', grad: 'linear-gradient(135deg, #6B7280, #374151)', icon: '🕵️', type: 'movie' },
+        { name: 'Documentary', grad: 'linear-gradient(135deg, #06B6D4, #0891B2)', icon: '📹', type: 'movie' },
+        { name: 'Drama', grad: 'linear-gradient(135deg, #8B5CF6, #4C1D95)', icon: '🎭', type: 'movie' },
+        { name: 'Fantasy', grad: 'linear-gradient(135deg, #EC4899, #8B5CF6)', icon: '🦄', type: 'movie' },
+        { name: 'Family', grad: 'linear-gradient(135deg, #10B981, #115E59)', icon: '👨‍👩‍👧‍👦', type: 'movie' },
+        { name: 'History', grad: 'linear-gradient(135deg, #78350F, #451A03)', icon: '🏛️', type: 'movie' },
+        { name: 'Horror', grad: 'linear-gradient(135deg, #111827, #030712)', icon: '👻', type: 'movie' },
+        { name: 'Mystery', grad: 'linear-gradient(135deg, #4F46E5, #312E81)', icon: '🔍', type: 'movie' },
+        { name: 'Romance', grad: 'linear-gradient(135deg, #F43F5E, #9F1239)', icon: '💖', type: 'movie' },
+        { name: 'Sci-Fi', grad: 'linear-gradient(135deg, #8B5CF6, #312E81)', icon: '🚀', type: 'movie' },
+        { name: 'Sports', grad: 'linear-gradient(135deg, #10B981, #065F46)', icon: '⚽', type: 'movie' },
+        { name: 'Thriller', grad: 'linear-gradient(135deg, #991B1B, #450A0A)', icon: '🔪', type: 'movie' },
+        { name: 'War', grad: 'linear-gradient(135deg, #78350F, #3F2E2C)', icon: '🪖', type: 'movie' },
+        { name: 'Western', grad: 'linear-gradient(135deg, #B45309, #78350F)', icon: '🤠', type: 'movie' },
+        { name: 'Superhero', grad: 'linear-gradient(135deg, #0284C7, #0369A1)', icon: '🦸', type: 'movie' },
+        { name: 'Psychological', grad: 'linear-gradient(135deg, #6366F1, #4338CA)', icon: '🧠', type: 'movie' },
+        { name: 'Political', grad: 'linear-gradient(135deg, #475569, #1E293B)', icon: '🏛️', type: 'movie' },
+        { name: 'Legal', grad: 'linear-gradient(135deg, #0D9488, #0F766E)', icon: '⚖️', type: 'movie' },
+        { name: 'Spy', grad: 'linear-gradient(135deg, #1E293B, #0F172A)', icon: '🕶️', type: 'movie' },
+        { name: 'Military', grad: 'linear-gradient(135deg, #3F493D, #222920)', type: 'movie' },
+        { name: 'Cyberpunk', grad: 'linear-gradient(135deg, #D946EF, #701A75)', icon: '🌆', type: 'movie' },
+        { name: 'Steampunk', grad: 'linear-gradient(135deg, #CA8A04, #713F12)', icon: '⚙️', type: 'movie' },
+        { name: 'Post-Apocalyptic', grad: 'linear-gradient(135deg, #7C2D12, #451A03)', icon: '☣️', type: 'movie' },
+        { name: 'Time Travel', grad: 'linear-gradient(135deg, #EA580C, #7C2D12)', icon: '⏳', type: 'movie' },
+        { name: 'Space Exploration', grad: 'linear-gradient(135deg, #2563EB, #172554)', icon: '🌌', type: 'movie' },
+        { name: 'Coming of Age', grad: 'linear-gradient(135deg, #16A34A, #14532D)', icon: '🌱', type: 'movie' },
+        { name: 'Noir', grad: 'linear-gradient(135deg, #0F172A, #020617)', icon: '🕶️', type: 'movie' },
+        { name: 'Survival', grad: 'linear-gradient(135deg, #15803D, #14532D)', icon: '🏕️', type: 'movie' },
+        { name: 'Disaster', grad: 'linear-gradient(135deg, #DC2626, #7F1D1D)', icon: '🌋', type: 'movie' },
+        { name: 'Martial Arts', grad: 'linear-gradient(135deg, #B91C1C, #450A0A)', icon: '🥋', type: 'movie' },
+        { name: 'Epic', grad: 'linear-gradient(135deg, #D97706, #78350F)', icon: '⚔️', type: 'movie' },
+
+        // TV genres (16)
+        { name: 'Drama Series', grad: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', icon: '📺', type: 'series' },
+        { name: 'Crime Series', grad: 'linear-gradient(135deg, #475569, #1E293B)', icon: '🚓', type: 'series' },
+        { name: 'Fantasy Series', grad: 'linear-gradient(135deg, #EC4899, #8B5CF6)', icon: '🐉', type: 'series' },
+        { name: 'Sci-Fi Series', grad: 'linear-gradient(135deg, #8B5CF6, #4C1D95)', icon: '🛸', type: 'series' },
+        { name: 'Comedy Series', grad: 'linear-gradient(135deg, #F59E0B, #D97706)', icon: '🎭', type: 'series' },
+        { name: 'Anime', grad: 'linear-gradient(135deg, #06B6D4, #0891B2)', icon: '🌸', type: 'series' },
+        { name: 'K-Drama', grad: 'linear-gradient(135deg, #EC4899, #BE185D)', icon: '🇰🇷', type: 'series' },
+        { name: 'Docuseries', grad: 'linear-gradient(135deg, #10B981, #047857)', icon: '🎤', type: 'series' },
+        { name: 'Reality TV', grad: 'linear-gradient(135deg, #EAB308, #A16207)', icon: '🌟', type: 'series' },
+        { name: 'Medical Series', grad: 'linear-gradient(135deg, #0D9488, #0F766E)', icon: '🩺', type: 'series' },
+        { name: 'Legal Series', grad: 'linear-gradient(135deg, #0284C7, #0369A1)', icon: '⚖️', type: 'series' },
+        { name: 'Political Series', grad: 'linear-gradient(135deg, #4F46E5, #312E81)', icon: '🏛️', type: 'series' },
+        { name: 'Detective Series', grad: 'linear-gradient(135deg, #1E293B, #0F172A)', icon: '🔍', type: 'series' },
+        { name: 'Mini Series', grad: 'linear-gradient(135deg, #D946EF, #701A75)', icon: '🎞️', type: 'series' },
+        { name: 'Historical Series', grad: 'linear-gradient(135deg, #CA8A04, #713F12)', icon: '🏰', type: 'series' },
+        { name: 'Animated Series', grad: 'linear-gradient(135deg, #06B6D4, #0891B2)', icon: '🎮', type: 'series' }
     ];
+
+    const filteredCategories = categoriesData.filter(c => {
+        if (currentFormat === 'all') return true;
+        if (currentFormat === 'movie' && c.type === 'movie') return true;
+        if (currentFormat === 'series' && c.type === 'series') return true;
+        return false;
+    });
 
     contentRows.innerHTML = prepend + `
         <div class="category-selection-container" style="padding: 0 24px 40px;">
             <div id="categories-grid-container">
                 <h3 style="font-size: 1.15rem; color: white; margin-bottom: 16px;">All Categories</h3>
                 <div class="genre-bubble-grid" id="category-cards-grid">
-                    ${categoriesData.map(c => `
+                    ${filteredCategories.map(c => `
                         <div class="genre-bubble category-card" data-name="${c.name.toLowerCase()}" onclick="selectCategory('${c.name}')" 
                              style="background: ${c.grad};">
                             <span class="genre-bubble__icon">${c.icon}</span>
@@ -1284,10 +1536,16 @@ function createMovieCardHTML(movie) {
     const saved = isInMyList(movie.item_id);
 
     return `
-    <div class="card-wrap" onclick="openModal(${movie.item_id})" style="cursor: pointer;">
+    <div class="card-wrap" style="cursor: pointer;">
         <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
             <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
             <div class="card-3d__badge">${score}%</div>
+            <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                ${saved 
+                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+                }
+            </button>
             <div class="card-3d__glare"></div>
         </div>
         <div class="card-expand">
@@ -1367,169 +1625,300 @@ function loadSearchPage() {
     heroSection.style.display = 'none';
     
     contentRows.innerHTML = `
-        <div class="search-chatbot-container" style="padding: 80px 24px 20px; display: flex; flex-direction: column; height: calc(100vh - 150px); max-height: 700px; max-width: 800px; margin: 0 auto;">
-            <div class="search-chatbot-header" style="text-align: center; margin-bottom: 20px;">
-                <h1 style="font-size: 2rem; font-weight: 800; color: white; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <span class="ai-glow">✦</span> Aurora Assistant
-                </h1>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Your conversational search. Enter movie titles, genres, moods, or themes.</p>
-            </div>
+        <div class="search-page-container" style="padding: 80px 5% 40px; min-height: 80vh; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px;">
             
-            <div id="search-chat-history" class="chat-history-container" style="flex: 1; overflow-y: auto; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: var(--r-lg); display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; scrollbar-width: none;">
-                <div class="ai-msg ai-msg--bot" style="animation: msgIn 0.3s var(--ease-out);">
-                    Hi! I'm Aurora, your AI cinematic companion. Type a movie name, genre, or request below, and I'll find the perfect match for you.<br><br>
-                    💡 Try asking:<br>
-                    • <em>"Recommend some mind-bending sci-fi movies"</em><br>
-                    • <em>"Show me dark psychological thrillers"</em><br>
-                    • <em>"Find movies similar to Interstellar"</em>
-                </div>
-            </div>
-            
-            <div class="search-chat-input-wrapper" style="position: relative; display: flex; gap: 10px; align-items: center;">
-                <div style="position: relative; flex: 1;">
-                    <input type="text" id="search-chat-input" placeholder="Search by name, genre, or describe your mood..." 
-                           style="width: 100%; padding: 14px 20px; border-radius: var(--r-pill); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: white; font-size: 0.95rem; outline: none; transition: border-color var(--t-fast);"
+            <!-- 1. Search Field Header -->
+            <div class="search-page-header" style="display: flex; flex-direction: column; gap: 16px;">
+                <h1 style="font-size: 2.2rem; font-weight: 800; color: white;">Search & Discovery</h1>
+                <div class="search-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <span style="position: absolute; left: 24px; color: var(--text-muted); font-size: 1.2rem;">🔍</span>
+                    <input type="text" id="search-page-input" placeholder="Search movies, TV series, actors, directors, genres..." 
+                           style="width: 100%; padding: 18px 60px; border-radius: var(--r-pill); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: white; font-size: 1.1rem; outline: none; transition: border-color var(--t-fast), box-shadow var(--t-fast);"
                            autocomplete="off">
-                    <div id="search-autocomplete-dropdown" style="position: absolute; bottom: 100%; left: 0; right: 0; background: rgba(15,15,15,0.95); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--r-md); max-height: 200px; overflow-y: auto; display: none; z-index: 10;"></div>
+                    <button id="search-voice-placeholder" style="position: absolute; right: 24px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;" title="Voice Search (Not available)">🎙️</button>
                 </div>
-                <button id="search-chat-send" 
-                        style="width: 48px; height: 48px; border-radius: 50%; background: var(--aurora-cyan); color: black; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform var(--t-fast);"
-                        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                </button>
+            </div>
+            
+            <!-- 2. Suggestions Dropdown / Live Results Box -->
+            <div id="search-page-suggestions" style="background: rgba(15,15,15,0.9); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 15px; display: none; flex-direction: column; gap: 16px; z-index: 100;">
+            </div>
+            
+            <!-- 3. Main Search content area -->
+            <div id="search-page-content" style="display: flex; flex-direction: column; gap: 40px;">
+                 <!-- Empty state or Results grid gets rendered here -->
             </div>
         </div>
     `;
     
-    const historyContainer = document.getElementById('search-chat-history');
-    historyContainer.scrollTop = historyContainer.scrollHeight;
+    const input = document.getElementById('search-page-input');
+    if (input) {
+        input.addEventListener('input', handleLiveSearch);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                executeSearchPageQuery(input.value.trim());
+            }
+        });
+    }
     
-    const input = document.getElementById('search-chat-input');
-    const send = document.getElementById('search-chat-send');
-    const acDropdown = document.getElementById('search-autocomplete-dropdown');
-    
-    send.onclick = () => handleSearchSend(input, historyContainer, acDropdown);
-    input.onkeydown = (e) => {
-        if (e.key === 'Enter') handleSearchSend(input, historyContainer, acDropdown);
-    };
-    
-    let searchAcTimer;
-    input.addEventListener('input', () => {
-        const q = input.value.trim();
-        if (q.length < 2) { acDropdown.style.display = 'none'; return; }
-        clearTimeout(searchAcTimer);
-        searchAcTimer = setTimeout(async () => {
-            try {
-                const r = await authFetch(`/autocomplete?q=${encodeURIComponent(q)}`);
-                if (!r.ok) return;
-                const list = await r.json();
-                if (list.length > 0) {
-                    acDropdown.innerHTML = list.map(t =>
-                        `<div class="ac-item" style="padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'" onclick="pickSearchAc('${esc(t)}', document.getElementById('search-chat-input'), document.getElementById('search-autocomplete-dropdown'), document.getElementById('search-chat-history'))">${t}</div>`
-                    ).join('');
-                    acDropdown.style.display = 'block';
-                } else {
-                    acDropdown.style.display = 'none';
-                }
-            } catch (e) { /* ignore */ }
-        }, 200);
-    });
+    renderSearchEmptyState();
 }
 
-function pickSearchAc(title, input, dropdown, history) {
-    input.value = `Similar to ${title}`;
-    dropdown.style.display = 'none';
-    handleSearchSend(input, history, dropdown);
-}
+window.renderSearchEmptyState = function() {
+    const container = document.getElementById('search-page-content');
+    if (!container) return;
+    
+    const trendingMovies = FALLBACK_MOVIES.filter(m => !isSeries(m)).slice(0, 4);
+    const popularSeries = FALLBACK_MOVIES.filter(m => isSeries(m)).slice(0, 4);
+    
+    const recentSearches = JSON.parse(localStorage.getItem('aurora_recent_searches') || '[]');
+    
+    const suggestedSearches = [
+        "Mind-bending sci-fi",
+        "Dark psychological dramas",
+        "Action comedy thrillers",
+        "Christopher Nolan",
+        "Gothic mystery"
+    ];
+    
+    const popularGenres = [
+        { name: "Action", icon: "🎬" },
+        { name: "Sci-Fi", icon: "🚀" },
+        { name: "Horror", icon: "👻" },
+        { name: "Comedy", icon: "😂" },
+        { name: "Drama", icon: "🎭" }
+    ];
+    
+    let recentHTML = '';
+    if (recentSearches.length > 0) {
+        recentHTML = `
+            <div style="margin-top: 20px;">
+                <h3 style="color: white; font-size: 1.2rem; margin-bottom: 12px; text-align: left;">Recent Searches</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
+                    ${recentSearches.map(q => `
+                        <button onclick="executeSearchPageQuery('${esc(q)}')" style="padding: 10px 18px; border-radius: var(--r-pill); background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2); color: var(--aurora-cyan); cursor: pointer; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(6,182,212,0.12)'" onmouseout="this.style.background='rgba(6,182,212,0.06)'">${q}</button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+            <div>
+                <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left;">Suggested Searches</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
+                    ${suggestedSearches.map(q => `
+                        <button onclick="executeSearchPageQuery('${q}')" style="padding: 10px 18px; border-radius: var(--r-pill); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: white; cursor: pointer; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">${q}</button>
+                    `).join('')}
+                </div>
+                ${recentHTML}
+            </div>
+            
+            <div>
+                <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left;">Popular Genres</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">
+                    ${popularGenres.map(g => `
+                        <button onclick="executeSearchPageQuery('${g.name}')" style="padding: 10px 18px; border-radius: var(--r-pill); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: white; cursor: pointer; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">${g.icon} ${g.name}</button>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left;">Trending Movies</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 20px;">
+                ${trendingMovies.map(movie => {
+                    const m = movie.rich_metadata || {};
+                    const score = m.match_percentage || 92;
+                    return `
+                        <div onclick="openModal(${movie.item_id})" style="cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                            <div style="position: relative; border-radius: var(--r-sm); overflow: hidden; aspect-ratio: 2/3; border: 1px solid var(--glass-border);">
+                                <img src="${movie.poster_url}" alt="${movie.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: var(--match-green); font-size: 0.75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">${score}%</div>
+                            </div>
+                            <div style="font-size: 0.8rem; font-weight: 600; color: white; margin-top: 8px; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${movie.title}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
 
-async function handleSearchSend(input, historyContainer, dropdown) {
-    const query = input.value.trim();
+        <div>
+            <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left;">Popular TV Series</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 20px;">
+                ${popularSeries.map(movie => {
+                    const m = movie.rich_metadata || {};
+                    const score = m.match_percentage || 88;
+                    return `
+                        <div onclick="openModal(${movie.item_id})" style="cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                            <div style="position: relative; border-radius: var(--r-sm); overflow: hidden; aspect-ratio: 2/3; border: 1px solid var(--glass-border);">
+                                <img src="${movie.poster_url}" alt="${movie.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: var(--match-green); font-size: 0.75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">${score}%</div>
+                            </div>
+                            <div style="font-size: 0.8rem; font-weight: 600; color: white; margin-top: 8px; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${movie.title}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+};
+
+window.handleLiveSearch = function() {
+    const input = document.getElementById('search-page-input');
+    const suggestionsBox = document.getElementById('search-page-suggestions');
+    if (!input || !suggestionsBox) return;
+    
+    const query = input.value.trim().toLowerCase();
+    if (query.length < 2) {
+        suggestionsBox.style.display = 'none';
+        return;
+    }
+    
+    const matchedMovies = FALLBACK_MOVIES.filter(m => !isSeries(m) && m.title.toLowerCase().includes(query)).slice(0, 3);
+    const matchedSeries = FALLBACK_MOVIES.filter(m => isSeries(m) && m.title.toLowerCase().includes(query)).slice(0, 3);
+    
+    const allGenres = [...new Set(FALLBACK_MOVIES.flatMap(m => m.rich_metadata.genres || []))];
+    const matchedGenres = allGenres.filter(g => g.toLowerCase().includes(query)).slice(0, 3);
+    
+    const allDirectors = [...new Set(FALLBACK_MOVIES.map(m => m.rich_metadata.director).filter(Boolean))];
+    const matchedDirectors = allDirectors.filter(d => d.toLowerCase().includes(query)).slice(0, 3);
+    
+    const allThemes = [...new Set(FALLBACK_MOVIES.flatMap(m => m.rich_metadata.themes || []))];
+    const matchedThemes = allThemes.filter(t => t.toLowerCase().includes(query)).slice(0, 3);
+    
+    let html = '';
+    
+    if (matchedMovies.length > 0) {
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Movies</strong>`;
+        html += matchedMovies.map(m => `<div style="padding:6px 12px; cursor:pointer;" onclick="openModal(${m.item_id})">🎬 ${m.title}</div>`).join('');
+        html += `</div>`;
+    }
+    
+    if (matchedSeries.length > 0) {
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Series</strong>`;
+        html += matchedSeries.map(m => `<div style="padding:6px 12px; cursor:pointer;" onclick="openModal(${m.item_id})">📺 ${m.title}</div>`).join('');
+        html += `</div>`;
+    }
+    
+    if (matchedGenres.length > 0) {
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Genres</strong>`;
+        html += matchedGenres.map(g => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${g}')">🎭 ${g}</div>`).join('');
+        html += `</div>`;
+    }
+    
+    if (matchedDirectors.length > 0) {
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Directors</strong>`;
+        html += matchedDirectors.map(d => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${d}')">🎥 ${d}</div>`).join('');
+        html += `</div>`;
+    }
+    
+    if (matchedThemes.length > 0) {
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Themes</strong>`;
+        html += matchedThemes.map(t => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${t}')">🌀 ${t}</div>`).join('');
+        html += `</div>`;
+    }
+    
+    if (html === '') {
+        suggestionsBox.style.display = 'none';
+    } else {
+        suggestionsBox.innerHTML = html;
+        suggestionsBox.style.display = 'flex';
+        suggestionsBox.style.flexDirection = 'column';
+    }
+};
+
+window.executeSearchPageQuery = async function(query) {
     if (!query) return;
     
-    input.value = '';
-    dropdown.style.display = 'none';
+    // Save to recent searches
+    try {
+        let recent = JSON.parse(localStorage.getItem('aurora_recent_searches') || '[]');
+        recent = recent.filter(q => q.toLowerCase() !== query.toLowerCase());
+        recent.unshift(query);
+        if (recent.length > 5) recent.pop();
+        localStorage.setItem('aurora_recent_searches', JSON.stringify(recent));
+    } catch(e) {
+        console.warn("Could not save recent search:", e);
+    }
+
+    const suggestionsBox = document.getElementById('search-page-suggestions');
+    if (suggestionsBox) suggestionsBox.style.display = 'none';
     
-    addSearchMsg(query, true, historyContainer);
+    const input = document.getElementById('search-page-input');
+    if (input) input.value = query;
     
-    const loadingId = 'bot-loading-' + Date.now();
-    addSearchMsg('<div class="skeleton" style="width: 50px; height: 16px;"></div>', false, historyContainer, loadingId);
+    const container = document.getElementById('search-page-content');
+    if (!container) return;
     
+    container.innerHTML = `<div style="text-align:center; padding:40px;"><div class="skeleton" style="width:50px; height:50px; border-radius:50%; margin:0 auto 15px;"></div>Searching for "${query}"...</div>`;
+    
+    let movies = [];
     try {
         const resp = await fetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ user_id: userId, query, exclude_ids: [] })
         });
-        const data = await resp.json();
-        
-        const loadingBubble = document.getElementById(loadingId);
-        if (loadingBubble) loadingBubble.remove();
-        
-        if (data.intent === 'explanation') {
-            addSearchMsg(data.response, false, historyContainer);
-            return;
-        }
-        
-        let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
-        if (movies && movies.length > 0) {
-            addSearchMsg(`Found ${movies.length} titles for you:`, false, historyContainer);
-            
-            const rowSection = document.createElement('div');
-            rowSection.style.margin = '10px 0';
-            rowSection.style.width = '100%';
-            
-            const scrollContainer = document.createElement('div');
-            scrollContainer.style.display = 'flex';
-            scrollContainer.style.gap = '12px';
-            scrollContainer.style.overflowX = 'auto';
-            scrollContainer.style.padding = '8px 0';
-            scrollContainer.style.scrollbarWidth = 'none';
-            
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.style.minWidth = '110px';
-                card.style.width = '110px';
-                card.style.flex = '0 0 auto';
-                card.style.cursor = 'pointer';
-                card.onclick = () => openModal(movie.item_id);
-                
-                const m = movie.rich_metadata || {};
-                const poster = movie.poster_url || placeholder(movie.title);
-                
-                card.innerHTML = `
-                    <div style="position: relative; border-radius: var(--r-sm); overflow: hidden; aspect-ratio: 2/3; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                        <img src="${poster}" alt="${movie.title}" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.8); color: var(--match-green); font-size: 0.7rem; font-weight: 700; padding: 2px 4px; border-radius: 4px;">${m.match_percentage || 88}%</div>
-                    </div>
-                    <div style="font-size: 0.75rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; text-align: center;">${movie.title}</div>
-                `;
-                scrollContainer.appendChild(card);
-            });
-            
-            rowSection.appendChild(scrollContainer);
-            historyContainer.appendChild(rowSection);
-            historyContainer.scrollTop = historyContainer.scrollHeight;
-            
-            globalMovies = [...globalMovies, ...movies];
-        } else {
-            addSearchMsg("I couldn't find anything matching that. Try typing another genre or name!", false, historyContainer);
+        if (resp.ok) {
+            const data = await resp.json();
+            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
         }
     } catch(err) {
-        const loadingBubble = document.getElementById(loadingId);
-        if (loadingBubble) loadingBubble.remove();
-        addSearchMsg('Connection issue. Please try again.', false, historyContainer);
+        console.warn("Search page query error, resorting to local search:", err);
     }
-}
-
-function addSearchMsg(text, isUser, container, id) {
-    const d = document.createElement('div');
-    d.className = `ai-msg ${isUser ? 'ai-msg--user' : 'ai-msg--bot'}`;
-    if (id) d.id = id;
-    d.innerHTML = text;
-    d.style.animation = 'msgIn 0.3s var(--ease-out)';
-    container.appendChild(d);
-    container.scrollTop = container.scrollHeight;
-}
+    
+    if (!movies || !Array.isArray(movies) || movies.length === 0) {
+        const q = query.toLowerCase();
+        movies = FALLBACK_MOVIES.filter(m => {
+            return m.title.toLowerCase().includes(q) ||
+                   m.overview.toLowerCase().includes(q) ||
+                   (m.rich_metadata.genres || []).some(g => g.toLowerCase().includes(q)) ||
+                   (m.rich_metadata.themes || []).some(t => t.toLowerCase().includes(q)) ||
+                   (m.rich_metadata.director || '').toLowerCase().includes(q);
+        });
+    }
+    
+    if (movies && movies.length > 0) {
+        container.innerHTML = `
+            <h3 style="color:white; font-size:1.2rem; margin-bottom:16px; text-align: left;">Results for "${query}"</h3>
+            <div class="search-results-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:24px;">
+                ${movies.map(movie => {
+                    const m = movie.rich_metadata || {};
+                    const poster = movie.poster_url || placeholder(movie.title);
+                    const score = m.match_percentage || randScore();
+                    const rating = m.rating || '8.0';
+                    const genres = (m.genres || m.tags || ['Drama']).slice(0, 2).join(', ');
+                    const runtime = m.runtime || '120 min';
+                    
+                    return `
+                        <div onclick="openModal(${movie.item_id})" style="cursor:pointer; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:var(--r-md); overflow:hidden; transition:transform var(--t-fast); text-align: left;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div style="position:relative; aspect-ratio:2/3;">
+                                <img src="${poster}" alt="${movie.title}" style="width:100%; height:100%; object-fit:cover;">
+                                <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.8); color:var(--match-green); font-size:0.75rem; font-weight:700; padding:3px 6px; border-radius:4px;">${score}% Match</div>
+                                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#f5c518; font-size:0.75rem; font-weight:700; padding:3px 6px; border-radius:4px;">★ ${rating}</div>
+                            </div>
+                            <div style="padding:12px; display:flex; flex-direction:column; gap:4px;">
+                                <div style="font-weight:700; color:white; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${movie.title}</div>
+                                <div style="font-size:0.8rem; color:var(--aurora-cyan);">${genres}</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">${runtime}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px; color:var(--text-muted);">
+                <div style="font-size:3rem; margin-bottom:15px;">🔍</div>
+                <h3>No results found for "${query}"</h3>
+                <p>Try searching for a different movie, genre, director, or click one of the suggestions below.</p>
+                <button onclick="renderSearchEmptyState()" style="margin-top:20px; padding:10px 20px; border-radius:var(--r-pill); background:var(--aurora-cyan); border:none; color:black; font-weight:700; cursor:pointer;">Reset Search</button>
+            </div>
+        `;
+    }
+};
 
 // ══════════════════════════════════════════════════════════════════════
 //  RENDER ENGINE
@@ -1566,9 +1955,14 @@ function renderHero(movie) {
     const m = movie.rich_metadata || {};
     const title = movie.title || 'Unknown';
     const bg = movie.backdrop_url || movie.poster_url || placeholder(title);
+    const poster = movie.poster_url || placeholder(title);
     const score = m.match_percentage || randScore();
+    const rating = m.rating || '8.2';
     const synopsis = m.story_summary || movie.overview || 'A cinematic masterpiece recommended by Aurora AI.';
-    const genres = (m.tags || ['Drama']).slice(0, 4).map(g => `<span class="gpill">${g}</span>`).join('');
+    const genres = (m.genres || m.tags || ['Drama']).slice(0, 4).map(g => `<span class="gpill">${g}</span>`).join('');
+    const castString = getMovieCast(title);
+    const languages = getMovieLanguages(movie);
+    const saved = isInMyList(movie.item_id);
 
     window.updateAmbientBackground(bg);
 
@@ -1576,23 +1970,54 @@ function renderHero(movie) {
     heroSection.innerHTML = `
         <div class="hero__bg" style="background-image:url('${bg}')"></div>
         <div class="hero__overlay"></div>
-        <div class="hero__inner" onclick="openModal(${movie.item_id})" style="cursor: pointer;">
-            <div class="hero__match">★ ${score}% Aurora Match</div>
-            <h1 class="hero__title">${title}</h1>
-            <div class="hero__meta">
-                ${m.year ? `<span>${m.year}</span><span class="hero__meta-dot"></span>` : ''}
-                ${m.runtime ? `<span>${m.runtime}</span><span class="hero__meta-dot"></span>` : ''}
-                <span style="color:var(--match-green)">Highly Recommended</span>
-            </div>
-            <div class="hero__genres">${genres}</div>
-            <p class="hero__desc">${synopsis}</p>
-            <div class="hero__btns">
-                <button class="hero-btn hero-btn--play" onclick="event.stopPropagation(); openModal(${movie.item_id})">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Play
-                </button>
-                <button class="hero-btn hero-btn--info" onclick="event.stopPropagation(); openModal(${movie.item_id})">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> More Info
-                </button>
+        <div class="hero__inner" style="max-width: 1000px; width: 100%;">
+            <div class="hero__layout" style="display: flex; gap: 32px; align-items: flex-end;">
+                <!-- Left Column: Poster -->
+                <img src="${poster}" alt="${title}" class="hero__poster" style="width: 220px; aspect-ratio: 2/3; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--glass-border); box-shadow: 0 12px 36px rgba(0,0,0,0.8); flex-shrink: 0;" onclick="openModal(${movie.item_id})">
+                
+                <!-- Right Column: Details -->
+                <div class="hero__details" style="flex: 1; min-width: 0; text-align: left;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; justify-content: flex-start;">
+                        <span class="hero__match" style="margin-bottom: 0; box-shadow: 0 4px 12px rgba(6,182,212,0.25);">★ ${score}% Aurora Match</span>
+                        <span style="color: #f5c518; font-weight: 700; font-size: 0.95rem; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid rgba(255,255,255,0.1);">IMDb ${rating}</span>
+                    </div>
+                    <h1 class="hero__title" style="margin-bottom: 12px; font-size: clamp(2rem, 4vw, 3.2rem); cursor: pointer; text-align: left;" onclick="openModal(${movie.item_id})">${title}</h1>
+                    <div class="hero__meta" style="margin-bottom: 14px; justify-content: flex-start;">
+                        ${m.year ? `<span>${m.year}</span><span class="hero__meta-dot"></span>` : ''}
+                        ${m.runtime ? `<span>${m.runtime}</span><span class="hero__meta-dot"></span>` : ''}
+                        <span>Languages: ${languages}</span>
+                    </div>
+                    <div class="hero__genres" style="margin-bottom: 14px; justify-content: flex-start;">${genres}</div>
+                    <p class="hero__desc" style="margin-bottom: 16px; font-size: 0.95rem; max-width: 600px; text-align: left;">${synopsis}</p>
+                    
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px; display: flex; flex-direction: column; gap: 4px; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: var(--r-sm); max-width: 600px; border: 1px solid rgba(255,255,255,0.04); text-align: left;">
+                        <div><span style="color: white; font-weight: 600;">Director:</span> ${m.director || "Unknown Director"}</div>
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span style="color: white; font-weight: 600;">Cast:</span> ${castString}</div>
+                    </div>
+                    
+                    <div class="hero__btns" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-start;">
+                        <button class="hero-btn hero-btn--play" onclick="event.stopPropagation(); openModal(${movie.item_id})" style="cursor: pointer;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Watch Trailer
+                        </button>
+                        <button class="hero-btn hero-btn--info" onclick="event.stopPropagation(); openModal(${movie.item_id})" style="cursor: pointer;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> View Details
+                        </button>
+                        
+                        <button class="hero-fav-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Favorites' : 'Add to Favorites'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            ${saved 
+                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+                            }
+                        </button>
+                        
+                        <button class="hero-watchlist-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Watchlist' : 'Add to Watchlist'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                            ${saved 
+                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aurora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+                                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+                            }
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -1616,10 +2041,16 @@ function appendRow(title, movies) {
         const saved = isInMyList(movie.item_id);
 
         return `
-        <div class="card-wrap" data-idx="${i}" onclick="openModal(${movie.item_id})" style="cursor: pointer;">
+        <div class="card-wrap" data-idx="${i}" style="cursor: pointer;">
             <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
                 <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
                 <div class="card-3d__badge">${score}%</div>
+                <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                    ${saved 
+                        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+                    }
+                </button>
                 <div class="card-3d__glare"></div>
             </div>
             <div class="card-expand">
@@ -1914,9 +2345,64 @@ async function openModal(id) {
     }
 }
 
+window.toggleFavorite = function(id) {
+    const movie = globalMovies.find(m => m.item_id === id) || FALLBACK_MOVIES.find(m => m.item_id === id) || myList.find(m => m.item_id === id);
+    if (!movie) return;
+    
+    toggleMyList(movie);
+    
+    window.updateCardHearts(id);
+    window.updateHeroSaveBtn(id);
+    window.updateModalSaveBtn(id);
+    
+    if (currentPage === 'favorites' || currentPage === 'my-list') {
+        renderFavoritesTab();
+    }
+};
+
+window.updateCardHearts = function(id) {
+    const isFav = isInMyList(id);
+    const heartBtns = document.querySelectorAll(`.card-heart-btn[data-id="${id}"]`);
+    heartBtns.forEach(btn => {
+        btn.classList.toggle('favorited', isFav);
+        btn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
+        btn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        btn.innerHTML = isFav 
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    });
+};
+
+window.updateHeroSaveBtn = function(id) {
+    const favBtn = document.querySelector(`.hero-fav-btn[data-id="${id}"]`);
+    const watchlistBtn = document.querySelector(`.hero-watchlist-btn[data-id="${id}"]`);
+    const isFav = isInMyList(id);
+    
+    if (favBtn) {
+        favBtn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        favBtn.innerHTML = isFav 
+            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+            : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    }
+    
+    if (watchlistBtn) {
+        watchlistBtn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        watchlistBtn.innerHTML = isFav 
+            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aurora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+            : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+    }
+};
+
+window.updateModalSaveBtn = function(id) {
+    const addBtn = document.getElementById('modal-add-list');
+    if (addBtn) {
+        const isFav = isInMyList(id);
+        addBtn.innerHTML = isFav ? `✓ Added` : `+ Add to List`;
+    }
+};
+
 function toggleSave(id) {
-    const movie = globalMovies.find(m => m.item_id === id) || myList.find(m => m.item_id === id);
-    if (movie) toggleMyList(movie);
+    window.toggleFavorite(id);
 }
 
 document.addEventListener('keydown', (e) => {

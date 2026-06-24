@@ -13,7 +13,7 @@
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar__header">
-            <div class="sidebar__logo">
+            <div class="sidebar__logo" onclick="navigateTo('home');" style="cursor: pointer;">
                 <span class="sidebar__logo-icon">✦</span>
                 <span class="sidebar__logo-text">AURORA</span>
             </div>
@@ -30,24 +30,28 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>Categories</span>
             </a>
+            <a href="#" class="sidebar__link" data-page="search" onclick="navigateTo('search');return false;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search</span>
+            </a>
             <a href="#" class="sidebar__link" data-page="favorites" onclick="navigateTo('favorites');return false;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span>Favorites</span>
-            </a>
-            <a href="#" class="sidebar__link" data-page="library" onclick="navigateTo('library');return false;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3.5A2.5 2.5 0 0 1 6.5 1H20v21H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
-                <span>Library</span>
             </a>
             <a href="#" class="sidebar__link" data-page="downloads" onclick="navigateTo('downloads');return false;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Downloads</span>
             </a>
+            <a href="#" class="sidebar__link" data-page="account" onclick="navigateTo('account');return false;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Account</span>
+            </a>
+            <a href="#" class="sidebar__link" data-page="settings" onclick="navigateTo('settings');return false;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+            </a>
         </nav>
         <div class="sidebar__bottom">
-            <button class="sidebar__link" id="search-trigger" aria-label="Search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <span>Search</span>
-            </button>
             <div class="sidebar__profile" id="profile-trigger">
                 <div class="sidebar__avatar">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -135,6 +139,13 @@
     <!-- ═══ Main Content ═══ -->
     <main class="main" id="main">
         <section class="hero" id="hero-section"></section>
+        <div class="row-section" id="home-filter-section" style="display: none; padding-top: 20px; margin-bottom: 0; padding-left: 5%; padding-right: 5%;">
+            <div class="format-filter-container" style="padding: 0; margin-bottom: 0;">
+                <button class="format-tab" id="format-tab-all" onclick="setDiscoveryFormat('all')">🔮 Combined Discovery</button>
+                <button class="format-tab" id="format-tab-movie" onclick="setDiscoveryFormat('movie')">🎬 Movies Only</button>
+                <button class="format-tab" id="format-tab-series" onclick="setDiscoveryFormat('series')">📺 TV Series Only</button>
+            </div>
+        </div>
         <div class="rows" id="content-rows"></div>
     </main>
 
@@ -311,7 +322,7 @@
     <!-- ═══ Footer ═══ -->
     <footer class="site-footer" id="site-footer">
         <div class="site-footer__inner">
-            <span class="site-footer__brand">AURORA</span>
+            <span class="site-footer__brand" onclick="navigateTo('home');" style="cursor: pointer;">AURORA</span>
             <div class="site-footer__links">
                 <a href="#">About</a><a href="#">Privacy</a><a href="#">Help Centre</a><a href="#">Contact</a>
             </div>
@@ -330,17 +341,17 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <span>Categories</span>
         </button>
+        <button class="bottom-nav__item" data-page="search" onclick="navigateTo('search');return false;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Search</span>
+        </button>
         <button class="bottom-nav__item" data-page="favorites" onclick="navigateTo('favorites');return false;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <span>Favorites</span>
         </button>
-        <button class="bottom-nav__item" data-page="library" onclick="navigateTo('library');return false;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3.5A2.5 2.5 0 0 1 6.5 1H20v21H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
-            <span>Library</span>
-        </button>
-        <button class="bottom-nav__item" data-page="search" onclick="navigateTo('search');return false;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span>Search</span>
+        <button class="bottom-nav__item" data-page="downloads" onclick="navigateTo('downloads');return false;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Downloads</span>
         </button>
     </nav>
 
@@ -348,7 +359,7 @@
     <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
     <aside class="drawer" id="drawer">
         <div class="drawer__header">
-            <div class="drawer__logo">
+            <div class="drawer__logo" onclick="navigateTo('home'); closeDrawer();" style="cursor: pointer;">
                 <span class="sidebar__logo-icon">✦</span>
                 <span class="drawer__logo-text">AURORA</span>
             </div>
