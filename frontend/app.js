@@ -598,14 +598,39 @@ window.setDiscoveryFormat = function(format) {
     window.currentFormat = format;
     localStorage.setItem('aurora_current_format', format);
     window.updateFormatTabs();
-    if (currentPage === 'home') {
+    
+    // Refresh modal recommendations if open
+    const modalOverlay = document.getElementById('movie-detail-modal');
+    if (modalOverlay && modalOverlay.classList.contains('active') && window.currentModalMovieData) {
+        renderModalData(window.currentModalMovieData, window.currentModalMovieId);
+    }
+
+    if (window.isDisplayingAIResults && window.lastAIRawResults) {
+        renderResults(window.lastAIRawResults, window.lastAIRowTitle, window.lastAIIsHome);
+    } else if (currentPage === 'home') {
         loadHomePage();
     } else if (currentPage === 'categories') {
         loadCategoriesTab();
+    } else if (currentPage === 'search') {
+        const input = document.getElementById('search-page-input');
+        const query = input ? input.value.trim() : '';
+        if (query) {
+            executeSearchPageQuery(query);
+        } else {
+            renderSearchEmptyState();
+        }
+    } else if (currentPage === 'favorites' || currentPage === 'my-list') {
+        renderFavoritesTab();
     }
 };
 
 // ── State ─────────────────────────────────────────────────────────────
+window.ragCache = {};
+window.isDisplayingAIResults = false;
+window.lastAIRawResults = null;
+window.lastAIRowTitle = '';
+window.lastAIIsHome = false;
+
 let globalMovies = [];
 let myList = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
 let currentPage = 'home';
@@ -1025,6 +1050,7 @@ function pickAc(title) {
 function navigateTo(page) {
     currentPage = page;
     window.shownItems = []; 
+    window.isDisplayingAIResults = false; 
 
     document.querySelectorAll('.sidebar__link').forEach(l => {
         l.classList.toggle('active', l.dataset.page === page);
@@ -1581,18 +1607,28 @@ async function loadCategoryPage(mainQuery, extraQueries, pageTitle) {
 
 async function fetchAndRender(query, rowTitle, isHero = false) {
     let movies = [];
-    try {
-        const resp = await authFetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, exclude_ids: window.shownItems || [] })
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+    
+    // Check global RAG cache
+    if (window.ragCache && window.ragCache[query]) {
+        movies = [...window.ragCache[query]];
+    } else {
+        try {
+            const resp = await authFetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query, exclude_ids: [] }) // Fetch all so we cache the full dataset
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+                if (movies && movies.length > 0) {
+                    window.ragCache = window.ragCache || {};
+                    window.ragCache[query] = movies;
+                }
+            }
+        } catch (e) {
+            console.warn(`Failed to fetch for row '${rowTitle}', attempting fallback. Error:`, e);
         }
-    } catch (e) {
-        console.warn(`Failed to fetch for row '${rowTitle}', attempting fallback. Error:`, e);
     }
 
     // Fallback logic if we have no movies or empty results
@@ -1610,37 +1646,41 @@ async function fetchAndRender(query, rowTitle, isHero = false) {
         movies = filtered;
     }
 
-    // Format Heuristic Filter (Movies vs TV Series)
+    // First: Filter by currentFormat (Movies vs TV Series)
     let filteredMovies = movies;
-    if (currentFormat === 'movie') {
-        filteredMovies = movies.filter(m => !isSeries(m));
-    } else if (currentFormat === 'series') {
-        filteredMovies = movies.filter(m => isSeries(m));
+    if (window.currentFormat === 'movie') {
+        filteredMovies = movies.filter(m => !window.isSeries(m));
+    } else if (window.currentFormat === 'series') {
+        filteredMovies = movies.filter(m => window.isSeries(m));
     }
 
-    // If format filtering leaves us empty, fill with format-aligned fallbacks
-    if (filteredMovies.length === 0) {
+    // Second: Filter out items already shown on the page to prevent duplicates
+    let dedupedMovies = filteredMovies.filter(m => !window.shownItems.includes(m.item_id));
+
+    // If format filtering & deduplication leaves us empty, fill with format-aligned fallbacks
+    if (dedupedMovies.length === 0) {
         const qLower = query.toLowerCase();
         let fallbackList = FALLBACK_MOVIES.filter(m => {
             const matchesQuery = m.rich_metadata.genres.some(g => qLower.includes(g.toLowerCase()) || g.toLowerCase().includes(qLower)) ||
                                  m.overview.toLowerCase().includes(qLower) ||
                                  m.title.toLowerCase().includes(qLower);
-            const matchesFormat = currentFormat === 'all' || 
-                                  (currentFormat === 'movie' && !isSeries(m)) || 
-                                  (currentFormat === 'series' && isSeries(m));
-            return matchesQuery && matchesFormat;
+            const matchesFormat = window.currentFormat === 'all' || 
+                                  (window.currentFormat === 'movie' && !window.isSeries(m)) || 
+                                  (window.currentFormat === 'series' && window.isSeries(m));
+            return matchesQuery && matchesFormat && !window.shownItems.includes(m.item_id);
         });
         
         if (fallbackList.length === 0) {
             fallbackList = FALLBACK_MOVIES.filter(m => {
-                return currentFormat === 'all' || 
-                       (currentFormat === 'movie' && !isSeries(m)) || 
-                       (currentFormat === 'series' && isSeries(m));
+                return (window.currentFormat === 'all' || 
+                       (window.currentFormat === 'movie' && !window.isSeries(m)) || 
+                       (window.currentFormat === 'series' && window.isSeries(m))) &&
+                       !window.shownItems.includes(m.item_id);
             }).sort(() => 0.5 - Math.random()).slice(0, 5);
         }
-        filteredMovies = fallbackList;
+        dedupedMovies = fallbackList;
     }
-    movies = filteredMovies;
+    movies = dedupedMovies;
 
     if (movies && movies.length > 0) {
         movies.forEach(m => {
@@ -1671,8 +1711,11 @@ window.renderFavoritesTab = function() {
     heroSection.style.display = 'none';
     contentRows.innerHTML = '';
 
-    const savedMovies = myList.filter(m => !isSeries(m));
-    const savedSeries = myList.filter(m => isSeries(m));
+    const activeFavorites = myList.filter(m => {
+        return window.currentFormat === 'all' ||
+               (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+               (window.currentFormat === 'series' && window.isSeries(m));
+    });
 
     const headerSec = document.createElement('div');
     headerSec.className = 'row-section';
@@ -1686,22 +1729,25 @@ window.renderFavoritesTab = function() {
     `;
     contentRows.appendChild(headerSec);
 
-    if (myList.length === 0) {
+    if (activeFavorites.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'empty-favorites';
         empty.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;text-align:center;padding:0 20px;';
         empty.innerHTML = `
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#E50914" stroke-width="1.5" style="margin-bottom: 20px; filter: drop-shadow(0 0 8px rgba(229,9,20,0.4)); animation: pulse-mic 1.6s infinite;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             <h2 style="font-size:1.8rem;color:var(--text-primary);margin:0 0 10px;">No favorites yet.</h2>
-            <p style="color:var(--text-muted);max-width:450px;margin-bottom:30px; font-size: 1rem;">Tap the heart icon on any movie to save it.</p>
+            <p style="color:var(--text-muted);max-width:450px;margin-bottom:30px; font-size: 1rem;">Tap the heart icon on any ${window.currentFormat === 'series' ? 'TV series' : 'movie'} to save it.</p>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                <button onclick="navigateTo('home')" style="padding:12px 24px; border-radius: var(--r-pill); background: var(--aurora-cyan); border: none; color: black; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Movies</button>
+                <button onclick="navigateTo('home')" style="padding:12px 24px; border-radius: var(--r-pill); background: var(--aurora-cyan); border: none; color: black; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Home</button>
                 <button onclick="navigateTo('categories')" style="padding:12px 24px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Categories</button>
             </div>
         `;
         contentRows.appendChild(empty);
         return;
     }
+
+    const savedMovies = activeFavorites.filter(m => !window.isSeries(m));
+    const savedSeries = activeFavorites.filter(m => window.isSeries(m));
 
     if (savedMovies.length > 0) {
         appendRow('Saved Movies', savedMovies);
@@ -1711,7 +1757,7 @@ window.renderFavoritesTab = function() {
     }
 
     // CURATED COLLECTIONS FROM SAVED ITEMS
-    const scifiFavs = myList.filter(m => {
+    const scifiFavs = activeFavorites.filter(m => {
         const genres = (m.rich_metadata && (m.rich_metadata.genres || m.rich_metadata.tags || []) || []).map(g => g.toLowerCase());
         return genres.includes('sci-fi') || genres.includes('science fiction');
     });
@@ -1719,7 +1765,7 @@ window.renderFavoritesTab = function() {
         appendRow('Sci-Fi Favorites Collection', scifiFavs);
     }
 
-    const actionFavs = myList.filter(m => {
+    const actionFavs = activeFavorites.filter(m => {
         const genres = (m.rich_metadata && (m.rich_metadata.genres || m.rich_metadata.tags || []) || []).map(g => g.toLowerCase());
         return genres.includes('action') || genres.includes('thriller');
     });
@@ -1727,7 +1773,12 @@ window.renderFavoritesTab = function() {
         appendRow('Action & Thriller Collection', actionFavs);
     }
     
-    const history = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    const rawHistory = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    const history = rawHistory.filter(m => {
+        return window.currentFormat === 'all' ||
+               (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+               (window.currentFormat === 'series' && window.isSeries(m));
+    });
     if (history.length > 0) {
         appendRow('Recently Viewed & Liked', history);
     }
@@ -1951,18 +2002,26 @@ async function loadSingleCategoryPage(categoryName) {
     `).join('');
     
     let movies = [];
-    try {
-        const resp = await authFetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: categoryName, exclude_ids: [] })
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+    if (window.ragCache && window.ragCache[`category_${categoryName}`]) {
+        movies = [...window.ragCache[`category_${categoryName}`]];
+    } else {
+        try {
+            const resp = await authFetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: categoryName, exclude_ids: [] })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+                if (movies && movies.length > 0) {
+                    window.ragCache = window.ragCache || {};
+                    window.ragCache[`category_${categoryName}`] = movies;
+                }
+            }
+        } catch(e) {
+            console.warn(`Category detail API error, utilizing fallbacks for '${categoryName}':`, e);
         }
-    } catch(e) {
-        console.warn(`Category detail API error, utilizing fallbacks for '${categoryName}':`, e);
     }
     
     if (!movies || !Array.isArray(movies) || movies.length === 0) {
@@ -2209,8 +2268,8 @@ window.renderSearchEmptyState = function() {
     const container = document.getElementById('search-page-content');
     if (!container) return;
     
-    const trendingMovies = FALLBACK_MOVIES.filter(m => !isSeries(m)).slice(0, 4);
-    const popularSeries = FALLBACK_MOVIES.filter(m => isSeries(m)).slice(0, 4);
+    const trendingMovies = FALLBACK_MOVIES.filter(m => !window.isSeries(m)).slice(0, 4);
+    const popularSeries = FALLBACK_MOVIES.filter(m => window.isSeries(m)).slice(0, 4);
     
     const recentSearches = JSON.parse(localStorage.getItem('aurora_recent_searches') || '[]');
     
@@ -2259,6 +2318,9 @@ window.renderSearchEmptyState = function() {
         `;
     }
     
+    const showMovies = window.currentFormat === 'all' || window.currentFormat === 'movie';
+    const showSeries = window.currentFormat === 'all' || window.currentFormat === 'series';
+    
     container.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 30px;">
             <div>
@@ -2276,6 +2338,7 @@ window.renderSearchEmptyState = function() {
             </div>
         </div>
         
+        ${showMovies ? `
         <div>
             <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left; font-weight: 700;">Trending Movies</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 20px;">
@@ -2294,7 +2357,9 @@ window.renderSearchEmptyState = function() {
                 }).join('')}
             </div>
         </div>
+        ` : ''}
 
+        ${showSeries ? `
         <div>
             <h3 style="color: white; font-size: 1.2rem; margin-bottom: 16px; text-align: left; font-weight: 700;">Popular TV Series</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 20px;">
@@ -2313,8 +2378,9 @@ window.renderSearchEmptyState = function() {
                 }).join('')}
             </div>
         </div>
+        ` : ''}
     `;
-};
+};;
 
 window.handleLiveSearch = function() {
     const input = document.getElementById('search-page-input');
@@ -2406,18 +2472,26 @@ window.executeSearchPageQuery = async function(query) {
     container.innerHTML = `<div style="text-align:center; padding:40px;"><div class="skeleton" style="width:50px; height:50px; border-radius:50%; margin:0 auto 15px;"></div>Searching for "${query}"...</div>`;
     
     let movies = [];
-    try {
-        const resp = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ user_id: userId, query, exclude_ids: [] })
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+    if (window.ragCache && window.ragCache[`search_${query}`]) {
+        movies = [...window.ragCache[`search_${query}`]];
+    } else {
+        try {
+            const resp = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ user_id: userId, query, exclude_ids: [] })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
+                if (movies && movies.length > 0) {
+                    window.ragCache = window.ragCache || {};
+                    window.ragCache[`search_${query}`] = movies;
+                }
+            }
+        } catch(err) {
+            console.warn("Search page query error, resorting to local search:", err);
         }
-    } catch(err) {
-        console.warn("Search page query error, resorting to local search:", err);
     }
     
     if (!movies || !Array.isArray(movies) || movies.length === 0) {
@@ -2486,10 +2560,30 @@ window.executeSearchPageQuery = async function(query) {
 // ══════════════════════════════════════════════════════════════════════
 
 function renderResults(movies, mainTitle, isHome = false) {
-    globalMovies = movies;
+    window.isDisplayingAIResults = true;
+    window.lastAIRawResults = movies;
+    window.lastAIRowTitle = mainTitle;
+    window.lastAIIsHome = isHome;
+
+    let filteredMovies = movies || [];
+    if (window.currentFormat === 'movie') {
+        filteredMovies = movies.filter(m => !window.isSeries(m));
+    } else if (window.currentFormat === 'series') {
+        filteredMovies = movies.filter(m => window.isSeries(m));
+    }
+
+    if (filteredMovies.length === 0) {
+        filteredMovies = FALLBACK_MOVIES.filter(m => {
+            return window.currentFormat === 'all' || 
+                   (window.currentFormat === 'movie' && !window.isSeries(m)) || 
+                   (window.currentFormat === 'series' && window.isSeries(m));
+        }).slice(0, 5);
+    }
+
+    globalMovies = filteredMovies;
     contentRows.innerHTML = '';
 
-    const sorted = [...movies].sort((a, b) => {
+    const sorted = [...filteredMovies].sort((a, b) => {
         return getScore(b) - getScore(a);
     });
 
@@ -3117,6 +3211,8 @@ async function openModalInternal(id, appendToHistory = true) {
         if (!m || m.error) {
             throw new Error((m && m.error) || 'Failed to fetch details');
         }
+        window.currentModalMovieData = m;
+        window.currentModalMovieId = id;
         renderModalData(m, id);
     } catch (err) {
         console.warn(`Movie detail API failed for ID ${id}, using local fallback:`, err);
@@ -3149,6 +3245,8 @@ async function openModalInternal(id, appendToHistory = true) {
                     { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 85 }
                 ]
             };
+            window.currentModalMovieData = fallbackDetails;
+            window.currentModalMovieId = id;
             renderModalData(fallbackDetails, id);
         } else {
             document.getElementById('modal-title').textContent = 'Error loading details.';
