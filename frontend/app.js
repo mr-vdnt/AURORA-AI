@@ -84,8 +84,14 @@ window.getSimilarRecommendations = function(seedMovie) {
     const combinedPool = [...(globalMovies || []), ...FALLBACK_MOVIES];
     combinedPool.forEach(m => {
         if (m && m.item_id && m.item_id !== seedMovie.item_id && !seen.has(m.item_id)) {
-            seen.add(m.item_id);
-            uniquePool.push(m);
+            // Apply currentFormat filtering before scoring and ranking candidates
+            const matchesFormat = window.currentFormat === 'all' ||
+                                  (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+                                  (window.currentFormat === 'series' && window.isSeries(m));
+            if (matchesFormat) {
+                seen.add(m.item_id);
+                uniquePool.push(m);
+            }
         }
     });
     
@@ -475,11 +481,25 @@ const FALLBACK_MOVIES = [
 
 // ── Format Discovery & Modulo Heuristic ─────────────────────────────────
 window.currentFormat = 'all';
-window.isSeries = function(movie) {
-    if (!movie) return false;
+
+window.getMovieType = function(movie) {
+    if (!movie) return 'unknown';
     
-    // Explicit title matches for known fallback titles
+    // Explicit type properties if present
+    if (movie.type) {
+        const t = movie.type.toLowerCase();
+        if (t === 'movie') return 'movie';
+        if (t === 'series' || t === 'show' || t === 'tv') return 'series';
+    }
+    if (movie.rich_metadata && movie.rich_metadata.type) {
+        const t = movie.rich_metadata.type.toLowerCase();
+        if (t === 'movie') return 'movie';
+        if (t === 'series' || t === 'show' || t === 'tv') return 'series';
+    }
+
     const titleLower = (movie.title || '').toLowerCase();
+    
+    // Explicit movie titles that might contain series keywords
     if (titleLower.includes('spider-man') || 
         titleLower.includes('batman') || 
         titleLower.includes('interstellar') || 
@@ -487,10 +507,14 @@ window.isSeries = function(movie) {
         titleLower.includes('grand budapest') || 
         titleLower.includes('no exit') || 
         titleLower.includes('encanto') || 
-        titleLower.includes('king\'s man')) {
-        return false;
+        titleLower.includes('king\'s man') ||
+        titleLower.includes('truman show') ||
+        titleLower.includes('showtime') ||
+        titleLower.includes('movie')) {
+        return 'movie';
     }
     
+    // Explicit known TV Series
     if (titleLower.includes('stranger things') || 
         titleLower.includes('wednesday') || 
         titleLower.includes('breaking bad') || 
@@ -501,25 +525,29 @@ window.isSeries = function(movie) {
         titleLower.includes('the office') ||
         titleLower.includes('sherlock') ||
         titleLower.includes('black mirror')) {
-        return true;
+        return 'series';
     }
     
-    // Check runtime format
+    // Check runtime format for TV episodes/seasons
     const runtime = (movie.runtime || (movie.rich_metadata && movie.rich_metadata.runtime) || '').toLowerCase();
     if (runtime.includes('season') || runtime.includes('seasons') || runtime.includes('episodes') || runtime.includes('episode')) {
-        return true;
+        return 'series';
     }
     
     // Check genres/tags
     const m = movie.rich_metadata || {};
     const genres = (m.genres || m.tags || movie.genres || []).map(g => g.toLowerCase());
-    const seriesKeywords = ['tv series', 'tv show', 'series', 'mini-series', 'docuseries', 'web series', 'anime series', 'show', 'shows'];
-    if (genres.some(g => seriesKeywords.includes(g) || g.includes('series') || g.includes('show') || g.includes('tv'))) {
-        return true;
+    const seriesKeywords = ['tv series', 'tv show', 'series', 'mini-series', 'docuseries', 'web series', 'anime series', 'show', 'shows', 'reality', 'limited-series'];
+    if (genres.some(g => seriesKeywords.includes(g) || g.includes('series') || g.includes('show') || g.includes('tv') || g.includes('episode'))) {
+        return 'series';
     }
     
-    // Fallback modulo heuristic for other items
-    return movie.item_id % 3 === 0;
+    // Default fallback is movie (movies.csv has only movies, no series)
+    return 'movie';
+};
+
+window.isSeries = function(movie) {
+    return window.getMovieType(movie) === 'series';
 };
 
 window.applyTheme = function(themeName) {
@@ -568,6 +596,7 @@ window.updateFormatTabs = function() {
 
 window.setDiscoveryFormat = function(format) {
     window.currentFormat = format;
+    localStorage.setItem('aurora_current_format', format);
     window.updateFormatTabs();
     if (currentPage === 'home') {
         loadHomePage();
@@ -604,6 +633,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const savedTheme = localStorage.getItem('aurora_theme') || 'neon';
     applyTheme(savedTheme);
+    
+    const savedFormat = localStorage.getItem('aurora_current_format') || 'all';
+    window.currentFormat = savedFormat;
+    window.updateFormatTabs();
     
     // Bind all logo click events for robust Home navigation
     document.querySelectorAll('.sidebar__logo, .topbar__logo, .drawer__logo, .site-footer__brand').forEach(logo => {
@@ -1519,8 +1552,8 @@ async function loadHomePage() {
         { q: 'Drama', title: isMovie ? 'Drama Movies' : (isSeriesVal ? 'Drama Series' : 'Dramatic Masterpieces') },
         { q: 'Romance', title: isMovie ? 'Romance Movies' : (isSeriesVal ? 'Romance Series' : 'Romance & Love Stories') },
         { q: 'Thriller', title: isMovie ? 'Thriller Movies' : (isSeriesVal ? 'Thriller Series' : 'High-Stakes Thrillers') },
-        { q: 'Anime', title: 'Anime & Animation' },
-        { q: 'Hidden Gems', title: 'Hidden Gems' }
+        { q: 'Anime', title: isMovie ? 'Animation Movies' : (isSeriesVal ? 'Anime Series' : 'Anime & Animation') },
+        { q: 'Hidden Gems', title: isMovie ? 'Hidden Gem Movies' : (isSeriesVal ? 'Hidden Gem Series' : 'Hidden Gems') }
     ];
 
     for (const g of genres) {
@@ -2397,6 +2430,15 @@ window.executeSearchPageQuery = async function(query) {
                    (m.rich_metadata.director || '').toLowerCase().includes(q);
         });
     }
+    
+    // Filter search results by active format mode
+    let filteredMovies = movies || [];
+    if (window.currentFormat === 'movie') {
+        filteredMovies = movies.filter(m => !window.isSeries(m));
+    } else if (window.currentFormat === 'series') {
+        filteredMovies = movies.filter(m => window.isSeries(m));
+    }
+    movies = filteredMovies;
     
     if (movies && movies.length > 0) {
         container.innerHTML = `
