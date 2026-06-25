@@ -1,5 +1,5 @@
 """
-AURORA AI - Orchestrator Agent API
+STREAMORA AI - Orchestrator Agent API
 
 Provides the unified natural language interface for the entire platform.
 """
@@ -28,7 +28,7 @@ from services.security.audit import log_event
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 
-app = FastAPI(title="AURORA AI - Secure Orchestrator Agent")
+app = FastAPI(title="STREAMORA AI - Secure Orchestrator Agent")
 
 # Rate Limiting
 limiter = Limiter(key_func=get_remote_address)

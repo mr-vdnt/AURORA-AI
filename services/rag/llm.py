@@ -1,5 +1,5 @@
 """
-AURORA AI - Intelligent Metadata Extractor (Lightweight RAG)
+STREAMORA AI - Intelligent Metadata Extractor (Lightweight RAG)
 
 Abstract interface for metadata operations. Replaces heavy LLMs with 
 intelligent heuristics applied against real TMDB data (movies.csv) 

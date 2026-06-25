@@ -6,7 +6,7 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import os
 
-app = FastAPI(title="AURORA AI - Recommendation Service (MVP)")
+app = FastAPI(title="STREAMORA AI - Recommendation Service (MVP)")
 
 class QueryRequest(BaseModel):
     query: str
@@ -52,7 +52,7 @@ async def startup_event():
 
 @app.get("/")
 def read_root():
-    return {"status": "AURORA AI Recommendation Service Running"}
+    return {"status": "STREAMORA AI Recommendation Service Running"}
 
 @app.post("/recommend", response_model=list[RecommendationResponse])
 def recommend(request: QueryRequest):

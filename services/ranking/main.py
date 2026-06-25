@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-app = FastAPI(title="AURORA AI - Multi-Stage Ranking Service")
+app = FastAPI(title="STREAMORA AI - Multi-Stage Ranking Service")
 
 
 # ── Request / Response Schemas ──────────────────────────────────────
@@ -74,7 +74,7 @@ async def startup_event():
 @app.get("/")
 def health():
     return {
-        "status": "AURORA AI Ranking Service Running",
+        "status": "STREAMORA AI Ranking Service Running",
         "retrieval_ready": faiss_index is not None,
         "ranking_ready": deepfm is not None,
     }

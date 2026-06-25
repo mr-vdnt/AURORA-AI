@@ -8,7 +8,7 @@ os.makedirs(log_dir, exist_ok=True)
 audit_log_path = os.path.join(log_dir, 'audit.log')
 
 # Configure the Audit Logger
-audit_logger = logging.getLogger("aurora_audit")
+audit_logger = logging.getLogger("streamora_audit")
 audit_logger.setLevel(logging.INFO)
 
 # File handler for append-only logging

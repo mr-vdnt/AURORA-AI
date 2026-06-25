@@ -1,5 +1,5 @@
 """
-AURORA AI - Knowledge Graph Engine
+STREAMORA AI - Knowledge Graph Engine
 
 Abstract interface for graph operations, allowing us to swap
 the underlying database (e.g., from NetworkX to Neo4j) in the future.

@@ -1,5 +1,5 @@
 """
-AURORA AI - Agent Tools
+STREAMORA AI - Agent Tools
 
 These functions are the "skills" that the Orchestrator Agent can use
 to interact with the underlying microservices.

@@ -1,5 +1,5 @@
 """
-AURORA AI - Feature Store
+STREAMORA AI - Feature Store
 
 Redis-backed real-time feature store for user profiles.
 Uses fakeredis for local development (swap to real Redis in production).

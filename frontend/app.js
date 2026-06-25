@@ -1,5 +1,5 @@
 /* ======================================================================
-   AURORA AI — 3D Spatial Cinematic Frontend
+   STREAMORA AI — 3D Spatial Cinematic Frontend
    Netflix × Apple TV × VisionOS Experience
    ====================================================================== */
 
@@ -1178,7 +1178,7 @@ window.applyTheme = function(themeName) {
         root.style.removeProperty('--bg-surface');
         root.style.removeProperty('--bg-raised');
     }
-    localStorage.setItem('aurora_theme', themeName);
+    localStorage.setItem('streamora_theme', themeName);
 };
 
 window.updateFormatTabs = function() {
@@ -1203,7 +1203,7 @@ window.updateFormatTabs = function() {
 
 window.setDiscoveryFormat = function(format) {
     window.currentFormat = format;
-    localStorage.setItem('aurora_current_format', format);
+    localStorage.setItem('streamora_current_format', format);
     window.updateFormatTabs();
     
     // Refresh modal recommendations if open
@@ -1239,7 +1239,7 @@ window.lastAIRowTitle = '';
 window.lastAIIsHome = false;
 
 let globalMovies = [];
-let myList = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
+let myList = JSON.parse(localStorage.getItem('streamora_mylist') || '[]');
 let currentPage = 'home';
 let token = 'guest-token';
 let userId = 32;
@@ -1255,10 +1255,10 @@ async function authFetch(url, options = {}) {
 //  INIT
 // ══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('aurora_theme') || 'neon';
+    const savedTheme = localStorage.getItem('streamora_theme') || 'neon';
     applyTheme(savedTheme);
     
-    const savedFormat = localStorage.getItem('aurora_current_format') || 'all';
+    const savedFormat = localStorage.getItem('streamora_current_format') || 'all';
     window.currentFormat = savedFormat;
     window.updateFormatTabs();
     
@@ -1580,7 +1580,7 @@ function createBotRecommendationHTML(movie) {
                     <span style="color: #f5c518; font-weight: 700;">IMDb ${rating}</span>
                     <span style="color: var(--text-muted);">${runtime}</span>
                 </div>
-                <div style="font-size: 0.75rem; color: var(--aurora-cyan); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${genres}</div>
+                <div style="font-size: 0.75rem; color: var(--streamora-cyan); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${genres}</div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3; margin-top: 2px; text-align: left;">
                     <strong>Reason:</strong> ${reason}
                 </div>
@@ -1624,7 +1624,7 @@ async function handleSend() {
 
         let movies = Array.isArray(data.response) ? data.response : (data.response && data.response.value);
         if (movies && movies.length > 0) {
-            let rowTitle = 'Aurora Recommendations';
+            let rowTitle = 'Streamora Recommendations';
             if (data.intent === 'trending') rowTitle = 'Trending Now';
             else if (data.intent === 'similar_movies') rowTitle = 'Because You Searched';
             else if (data.intent === 'genre_search') rowTitle = 'Genre Discovery';
@@ -1740,8 +1740,8 @@ function renderAccountTab() {
     heroSection.innerHTML = '';
     heroSection.style.display = 'none';
     
-    const userEmail = localStorage.getItem('aurora_user_email') || 'guest@aurora.ai';
-    const userName = localStorage.getItem('aurora_user_name') || 'Guest Explorer';
+    const userEmail = localStorage.getItem('streamora_user_email') || 'guest@streamora.ai';
+    const userName = localStorage.getItem('streamora_user_name') || 'Guest Explorer';
     const userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=06B6D4&color=000&size=128&bold=true`;
     
     contentRows.innerHTML = `
@@ -1751,11 +1751,11 @@ function renderAccountTab() {
             
             <!-- Premium Profile Card -->
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--r-lg); padding:30px; display:flex; gap:24px; align-items:center; margin-bottom:30px; backdrop-filter: blur(20px); flex-wrap: wrap;">
-                <img src="${userAvatar}" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--aurora-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);">
+                <img src="${userAvatar}" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--streamora-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);">
                 <div style="flex-grow: 1;">
                     <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: white;">${userName}</h2>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px;">${userEmail}</p>
-                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--aurora-cyan); background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); padding: 4px 10px; border-radius: 4px;">Premium Member</span>
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--streamora-cyan); background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); padding: 4px 10px; border-radius: 4px;">Premium Member</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <button onclick="editProfilePrompt()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: var(--r-md); color: white; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">Edit Profile</button>
@@ -1767,7 +1767,7 @@ function renderAccountTab() {
                 <h3 style="font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">Membership & Devices</h3>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
                     <span style="color:var(--text-muted); font-weight:500;">Membership Tier</span>
-                    <span style="color:white; font-weight:700;">Aurora Cinematic Premium (4K UHD)</span>
+                    <span style="color:white; font-weight:700;">Streamora Cinematic Premium (4K UHD)</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:15px; flex-wrap:wrap; gap:10px;">
                     <span style="color:var(--text-muted); font-weight:500;">Next Renewal</span>
@@ -1780,7 +1780,7 @@ function renderAccountTab() {
                             <span style="font-size: 1.5rem;">📱</span>
                             <div>
                                 <div style="font-weight:700; font-size: 0.9rem;">iPhone 15 Pro</div>
-                                <div style="font-size: 0.75rem; color: var(--aurora-cyan); font-weight:600;">Active Now (Streaming)</div>
+                                <div style="font-size: 0.75rem; color: var(--streamora-cyan); font-weight:600;">Active Now (Streaming)</div>
                             </div>
                         </div>
                         <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 12px; border-radius: var(--r-md); display:flex; gap:12px; align-items:center;">
@@ -1805,15 +1805,15 @@ function renderAccountTab() {
             <div style="background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:var(--r-lg); padding:30px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(20px);">
                 <h3 style="font-size: 1.2rem; font-weight: 700; color: white; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">Quick Discover Links</h3>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                    <div onclick="navigateTo('favorites')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--aurora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
+                    <div onclick="navigateTo('favorites')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--streamora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
                         <span style="font-size: 1.8rem; display:block; margin-bottom: 8px;">❤️</span>
                         <span style="font-weight:600; font-size: 0.95rem;">Watchlist & Favorites</span>
                     </div>
-                    <div onclick="navigateTo('downloads')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--aurora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
+                    <div onclick="navigateTo('downloads')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--streamora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
                         <span style="font-size: 1.8rem; display:block; margin-bottom: 8px;">📥</span>
                         <span style="font-weight:600; font-size: 0.95rem;">Downloads & Offline Hub</span>
                     </div>
-                    <div onclick="navigateTo('settings')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--aurora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
+                    <div onclick="navigateTo('settings')" style="background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); padding: 16px; border-radius: var(--r-md); cursor: pointer; text-align: center; transition: all var(--t-fast);" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='var(--streamora-cyan)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='var(--glass-border)';">
                         <span style="font-size: 1.8rem; display:block; margin-bottom: 8px;">⚙️</span>
                         <span style="font-weight:600; font-size: 0.95rem;">Application Settings</span>
                     </div>
@@ -1824,15 +1824,15 @@ function renderAccountTab() {
 }
 
 window.editProfilePrompt = function() {
-    const currentName = localStorage.getItem('aurora_user_name') || 'Guest Explorer';
-    const currentEmail = localStorage.getItem('aurora_user_email') || 'guest@aurora.ai';
+    const currentName = localStorage.getItem('streamora_user_name') || 'Guest Explorer';
+    const currentEmail = localStorage.getItem('streamora_user_email') || 'guest@streamora.ai';
     const newName = prompt("Enter new profile name:", currentName);
     if (newName === null) return;
     const newEmail = prompt("Enter new email address:", currentEmail);
     if (newEmail === null) return;
     
-    localStorage.setItem('aurora_user_name', newName.trim() || 'Guest Explorer');
-    localStorage.setItem('aurora_user_email', newEmail.trim() || 'guest@aurora.ai');
+    localStorage.setItem('streamora_user_name', newName.trim() || 'Guest Explorer');
+    localStorage.setItem('streamora_user_email', newEmail.trim() || 'guest@streamora.ai');
     renderAccountTab();
 };
 
@@ -1840,15 +1840,15 @@ function renderSettingsTab() {
     heroSection.innerHTML = '';
     heroSection.style.display = 'none';
     
-    const autoplay = localStorage.getItem('aurora_autoplay') !== 'false';
-    const quality = localStorage.getItem('aurora_quality') || 'auto';
-    const motion = localStorage.getItem('aurora_reduced_motion') === 'true';
-    const theme = localStorage.getItem('aurora_theme') || 'neon';
-    const language = localStorage.getItem('aurora_language') || 'en';
+    const autoplay = localStorage.getItem('streamora_autoplay') !== 'false';
+    const quality = localStorage.getItem('streamora_quality') || 'auto';
+    const motion = localStorage.getItem('streamora_reduced_motion') === 'true';
+    const theme = localStorage.getItem('streamora_theme') || 'neon';
+    const language = localStorage.getItem('streamora_language') || 'en';
     
-    const notifNew = localStorage.getItem('aurora_notif_new') !== 'false';
-    const notifRec = localStorage.getItem('aurora_notif_rec') !== 'false';
-    const notifDl = localStorage.getItem('aurora_notif_dl') !== 'false';
+    const notifNew = localStorage.getItem('streamora_notif_new') !== 'false';
+    const notifRec = localStorage.getItem('streamora_notif_rec') !== 'false';
+    const notifDl = localStorage.getItem('streamora_notif_dl') !== 'false';
     
     contentRows.innerHTML = `
         <div class="row-section" style="padding-top:80px; max-width:800px; margin:0 auto; padding-left: 24px; padding-right: 24px;">
@@ -1924,7 +1924,7 @@ function renderSettingsTab() {
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
                             <input type="radio" name="page-theme-choice" value="neon" ${theme === 'neon' ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageTheme('neon')">
-                            <span>Aurora Neon (Default Cyberpunk)</span>
+                            <span>Streamora Neon (Default Cyberpunk)</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color:var(--text-secondary);">
                             <input type="radio" name="page-theme-choice" value="slate" ${theme === 'slate' ? 'checked' : ''} style="width: 20px; height: 20px; cursor:pointer;" onchange="savePageTheme('slate')">
@@ -1969,14 +1969,14 @@ window.savePageSettings = function() {
     const notifRec = document.getElementById('page-settings-notif-rec').checked;
     const notifDl = document.getElementById('page-settings-notif-dl').checked;
     
-    localStorage.setItem('aurora_autoplay', autoplay);
-    localStorage.setItem('aurora_reduced_motion', motion);
-    localStorage.setItem('aurora_quality', quality);
-    localStorage.setItem('aurora_language', language);
+    localStorage.setItem('streamora_autoplay', autoplay);
+    localStorage.setItem('streamora_reduced_motion', motion);
+    localStorage.setItem('streamora_quality', quality);
+    localStorage.setItem('streamora_language', language);
     
-    localStorage.setItem('aurora_notif_new', notifNew);
-    localStorage.setItem('aurora_notif_rec', notifRec);
-    localStorage.setItem('aurora_notif_dl', notifDl);
+    localStorage.setItem('streamora_notif_new', notifNew);
+    localStorage.setItem('streamora_notif_rec', notifRec);
+    localStorage.setItem('streamora_notif_dl', notifDl);
     
     if (motion) {
         document.body.classList.add('reduced-motion');
@@ -1995,26 +1995,26 @@ window.simulateDownload = function(id) {
                   FALLBACK_MOVIES.find(m => parseInt(m.item_id) === parseInt(id));
     if (!movie) return;
 
-    let downloads = JSON.parse(localStorage.getItem('aurora_downloads') || '[]');
+    let downloads = JSON.parse(localStorage.getItem('streamora_downloads') || '[]');
     if (downloads.some(m => parseInt(m.item_id) === parseInt(id))) {
         alert("This title is already downloaded!");
         return;
     }
 
-    let downloading = JSON.parse(localStorage.getItem('aurora_downloading') || '[]');
+    let downloading = JSON.parse(localStorage.getItem('streamora_downloading') || '[]');
     if (downloading.some(d => parseInt(d.movie.item_id) === parseInt(id))) {
         alert("This title is already downloading!");
         return;
     }
 
     downloading.push({ movie, progress: 0 });
-    localStorage.setItem('aurora_downloading', JSON.stringify(downloading));
+    localStorage.setItem('streamora_downloading', JSON.stringify(downloading));
     
     window.updateModalDownloadBtn(id);
     if (currentPage === 'downloads') renderDownloadsTab();
 
     const interval = setInterval(() => {
-        let currentDownloading = JSON.parse(localStorage.getItem('aurora_downloading') || '[]');
+        let currentDownloading = JSON.parse(localStorage.getItem('streamora_downloading') || '[]');
         const itemIdx = currentDownloading.findIndex(d => parseInt(d.movie.item_id) === parseInt(id));
         if (itemIdx === -1) {
             clearInterval(interval);
@@ -2025,13 +2025,13 @@ window.simulateDownload = function(id) {
         if (currentDownloading[itemIdx].progress >= 100) {
             clearInterval(interval);
             currentDownloading.splice(itemIdx, 1);
-            localStorage.setItem('aurora_downloading', JSON.stringify(currentDownloading));
+            localStorage.setItem('streamora_downloading', JSON.stringify(currentDownloading));
 
-            let currentDownloaded = JSON.parse(localStorage.getItem('aurora_downloads') || '[]');
+            let currentDownloaded = JSON.parse(localStorage.getItem('streamora_downloads') || '[]');
             currentDownloaded.push(movie);
-            localStorage.setItem('aurora_downloads', JSON.stringify(currentDownloaded));
+            localStorage.setItem('streamora_downloads', JSON.stringify(currentDownloaded));
         } else {
-            localStorage.setItem('aurora_downloading', JSON.stringify(currentDownloading));
+            localStorage.setItem('streamora_downloading', JSON.stringify(currentDownloading));
         }
 
         if (currentPage === 'downloads') {
@@ -2042,9 +2042,9 @@ window.simulateDownload = function(id) {
 };
 
 window.removeDownload = function(id) {
-    let downloads = JSON.parse(localStorage.getItem('aurora_downloads') || '[]');
+    let downloads = JSON.parse(localStorage.getItem('streamora_downloads') || '[]');
     downloads = downloads.filter(m => parseInt(m.item_id) !== parseInt(id));
-    localStorage.setItem('aurora_downloads', JSON.stringify(downloads));
+    localStorage.setItem('streamora_downloads', JSON.stringify(downloads));
     if (currentPage === 'downloads') {
         renderDownloadsTab();
     }
@@ -2055,8 +2055,8 @@ window.updateModalDownloadBtn = function(id) {
     const dBtn = document.getElementById('modal-download-btn');
     if (!dBtn) return;
     
-    const downloads = JSON.parse(localStorage.getItem('aurora_downloads') || '[]');
-    const downloading = JSON.parse(localStorage.getItem('aurora_downloading') || '[]');
+    const downloads = JSON.parse(localStorage.getItem('streamora_downloads') || '[]');
+    const downloading = JSON.parse(localStorage.getItem('streamora_downloading') || '[]');
     
     const isDownloaded = downloads.some(m => parseInt(m.item_id) === parseInt(id));
     const downloadingItem = downloading.find(d => parseInt(d.movie.item_id) === parseInt(id));
@@ -2077,8 +2077,8 @@ async function renderDownloadsTab() {
     heroSection.innerHTML = '';
     heroSection.style.display = 'none';
 
-    const downloaded = JSON.parse(localStorage.getItem('aurora_downloads') || '[]');
-    const downloading = JSON.parse(localStorage.getItem('aurora_downloading') || '[]');
+    const downloaded = JSON.parse(localStorage.getItem('streamora_downloads') || '[]');
+    const downloading = JSON.parse(localStorage.getItem('streamora_downloading') || '[]');
 
     const storageUsed = (downloaded.length * 1.8 + downloading.length * 0.9).toFixed(1);
     const storageFree = (64.0 - parseFloat(storageUsed)).toFixed(1);
@@ -2116,9 +2116,9 @@ async function renderDownloadsTab() {
                         <img src="${d.movie.poster_url}" style="width:50px; height:75px; object-fit:cover; border-radius:4px;">
                         <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
                             <div style="color:white; font-weight:600; font-size:0.9rem;">${d.movie.title}</div>
-                            <div style="font-size:0.75rem; color:var(--aurora-cyan);">Downloading... ${d.progress}%</div>
+                            <div style="font-size:0.75rem; color:var(--streamora-cyan);">Downloading... ${d.progress}%</div>
                             <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                                <div style="height:100%; background:var(--aurora-cyan); width:${d.progress}%"></div>
+                                <div style="height:100%; background:var(--streamora-cyan); width:${d.progress}%"></div>
                             </div>
                         </div>
                     </div>
@@ -2172,7 +2172,7 @@ async function loadHomePage() {
     await fetchAndRender(topPicksQuery, topPicksTitle, true);
 
     // Continue Watching Row (if user has viewed history)
-    const history = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    const history = JSON.parse(localStorage.getItem('streamora_history') || '[]');
     const filteredHistory = history.filter(m => {
         return window.currentFormat === 'all' || 
                (isMovie && !window.isSeries(m)) ||
@@ -2375,7 +2375,7 @@ window.renderFavoritesTab = function() {
             <h2 style="font-size:1.8rem;color:var(--text-primary);margin:0 0 10px;">No favorites yet.</h2>
             <p style="color:var(--text-muted);max-width:450px;margin-bottom:30px; font-size: 1rem;">Tap the heart icon on any ${window.currentFormat === 'series' ? 'TV series' : 'movie'} to save it.</p>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                <button onclick="navigateTo('home')" style="padding:12px 24px; border-radius: var(--r-pill); background: var(--aurora-cyan); border: none; color: black; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Home</button>
+                <button onclick="navigateTo('home')" style="padding:12px 24px; border-radius: var(--r-pill); background: var(--streamora-cyan); border: none; color: black; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Home</button>
                 <button onclick="navigateTo('categories')" style="padding:12px 24px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform var(--t-fast);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Categories</button>
             </div>
         `;
@@ -2410,7 +2410,7 @@ window.renderFavoritesTab = function() {
         appendRow('Action & Thriller Collection', actionFavs);
     }
     
-    const rawHistory = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    const rawHistory = JSON.parse(localStorage.getItem('streamora_history') || '[]');
     const history = rawHistory.filter(m => {
         return window.currentFormat === 'all' ||
                (window.currentFormat === 'movie' && !window.isSeries(m)) ||
@@ -2433,7 +2433,7 @@ function toggleMyList(movie) {
     } else {
         myList.push(movie);
     }
-    localStorage.setItem('aurora_mylist', JSON.stringify(myList));
+    localStorage.setItem('streamora_mylist', JSON.stringify(myList));
 }
 
 function isInMyList(id) {
@@ -2444,11 +2444,11 @@ function isInMyList(id) {
 // ── Click History Tracking ───────────────────────────────────────────
 function addToHistory(movie) {
     if (!movie) return;
-    let history = JSON.parse(localStorage.getItem('aurora_history') || '[]');
+    let history = JSON.parse(localStorage.getItem('streamora_history') || '[]');
     history = history.filter(m => m.item_id !== movie.item_id);
     history.unshift(movie);
     if (history.length > 10) history.pop();
-    localStorage.setItem('aurora_history', JSON.stringify(history));
+    localStorage.setItem('streamora_history', JSON.stringify(history));
 }
 
 // ── Categories Tab ───────────────────────────────────────────────────
@@ -2721,9 +2721,9 @@ function createMovieCardHTML(movie) {
         <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
             <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
             <div class="card-3d__badge">${score}%</div>
-            <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+            <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--streamora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                 ${saved 
-                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--streamora-cyan)" stroke="var(--streamora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                     : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
                 }
             </button>
@@ -2735,13 +2735,13 @@ function createMovieCardHTML(movie) {
                 <div class="card-expand__title">${t}</div>
                 <div class="card-expand__meta">
                     <span class="card-expand__pct">${score}% Match</span>
-                    <span class="card-expand__type" style="color: var(--aurora-cyan); font-weight: 600; margin: 0 4px;">${isSeries(movie) ? 'TV Series' : 'Movie'}</span>
+                    <span class="card-expand__type" style="color: var(--streamora-cyan); font-weight: 600; margin: 0 4px;">${isSeries(movie) ? 'TV Series' : 'Movie'}</span>
                     ${m.year ? `<span>${m.year}</span>` : ''}
                     ${m.runtime ? `<span>${m.runtime}</span>` : ''}
                 </div>
                 <div class="card-expand__genres">${genres}</div>
                 <div class="card-expand__ai">
-                    <div class="card-expand__ai-label">Why Aurora Picked This</div>
+                    <div class="card-expand__ai-label">Why Streamora Picked This</div>
                     <ul>
                         <li>Matches your preferred genres</li>
                         <li>High thematic similarity</li>
@@ -2773,8 +2773,8 @@ async function renderLibraryTab() {
         </div>
     `;
     
-    const history = JSON.parse(localStorage.getItem('aurora_history') || '[]');
-    const watchlist = JSON.parse(localStorage.getItem('aurora_mylist') || '[]');
+    const history = JSON.parse(localStorage.getItem('streamora_history') || '[]');
+    const watchlist = JSON.parse(localStorage.getItem('streamora_mylist') || '[]');
     
     if (watchlist.length > 0) {
         appendRow('Your Watchlist', watchlist);
@@ -2908,7 +2908,7 @@ window.renderSearchEmptyState = function() {
     const trendingMovies = FALLBACK_MOVIES.filter(m => !window.isSeries(m)).slice(0, 4);
     const popularSeries = FALLBACK_MOVIES.filter(m => window.isSeries(m)).slice(0, 4);
     
-    const recentSearches = JSON.parse(localStorage.getItem('aurora_recent_searches') || '[]');
+    const recentSearches = JSON.parse(localStorage.getItem('streamora_recent_searches') || '[]');
     
     const suggestedSearches = [
         "Mind-bending sci-fi",
@@ -2934,7 +2934,7 @@ window.renderSearchEmptyState = function() {
                 <h3 style="color: white; font-size: 1.1rem; margin-bottom: 12px; text-align: left; font-weight: 700;">Recent Searches</h3>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start;">
                     ${recentSearches.map(q => `
-                        <button onclick="executeSearchPageQuery('${esc(q)}')" style="padding: 8px 16px; border-radius: var(--r-pill); background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2); color: var(--aurora-cyan); cursor: pointer; transition: all var(--t-fast); font-size: 0.85rem;" onmouseover="this.style.background='rgba(6,182,212,0.12)'" onmouseout="this.style.background='rgba(6,182,212,0.06)'">${q}</button>
+                        <button onclick="executeSearchPageQuery('${esc(q)}')" style="padding: 8px 16px; border-radius: var(--r-pill); background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2); color: var(--streamora-cyan); cursor: pointer; transition: all var(--t-fast); font-size: 0.85rem;" onmouseover="this.style.background='rgba(6,182,212,0.12)'" onmouseout="this.style.background='rgba(6,182,212,0.06)'">${q}</button>
                     `).join('')}
                 </div>
             </div>
@@ -3045,31 +3045,31 @@ window.handleLiveSearch = function() {
     let html = '';
     
     if (matchedMovies.length > 0) {
-        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Movies</strong>`;
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--streamora-cyan); font-size:0.8rem; text-transform:uppercase;">Movies</strong>`;
         html += matchedMovies.map(m => `<div style="padding:6px 12px; cursor:pointer;" onclick="openModal(${m.item_id})">🎬 ${m.title}</div>`).join('');
         html += `</div>`;
     }
     
     if (matchedSeries.length > 0) {
-        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Series</strong>`;
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--streamora-cyan); font-size:0.8rem; text-transform:uppercase;">Series</strong>`;
         html += matchedSeries.map(m => `<div style="padding:6px 12px; cursor:pointer;" onclick="openModal(${m.item_id})">📺 ${m.title}</div>`).join('');
         html += `</div>`;
     }
     
     if (matchedGenres.length > 0) {
-        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Genres</strong>`;
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--streamora-cyan); font-size:0.8rem; text-transform:uppercase;">Genres</strong>`;
         html += matchedGenres.map(g => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${g}')">🎭 ${g}</div>`).join('');
         html += `</div>`;
     }
     
     if (matchedDirectors.length > 0) {
-        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Directors</strong>`;
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--streamora-cyan); font-size:0.8rem; text-transform:uppercase;">Directors</strong>`;
         html += matchedDirectors.map(d => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${d}')">🎥 ${d}</div>`).join('');
         html += `</div>`;
     }
     
     if (matchedThemes.length > 0) {
-        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--aurora-cyan); font-size:0.8rem; text-transform:uppercase;">Themes</strong>`;
+        html += `<div style="text-align: left; padding: 4px 8px;"><strong style="color:var(--streamora-cyan); font-size:0.8rem; text-transform:uppercase;">Themes</strong>`;
         html += matchedThemes.map(t => `<div style="padding:6px 12px; cursor:pointer;" onclick="executeSearchPageQuery('${t}')">🌀 ${t}</div>`).join('');
         html += `</div>`;
     }
@@ -3088,11 +3088,11 @@ window.executeSearchPageQuery = async function(query) {
     
     // Save to recent searches
     try {
-        let recent = JSON.parse(localStorage.getItem('aurora_recent_searches') || '[]');
+        let recent = JSON.parse(localStorage.getItem('streamora_recent_searches') || '[]');
         recent = recent.filter(q => q.toLowerCase() !== query.toLowerCase());
         recent.unshift(query);
         if (recent.length > 5) recent.pop();
-        localStorage.setItem('aurora_recent_searches', JSON.stringify(recent));
+        localStorage.setItem('streamora_recent_searches', JSON.stringify(recent));
     } catch(e) {
         console.warn("Could not save recent search:", e);
     }
@@ -3196,7 +3196,7 @@ window.executeSearchPageQuery = async function(query) {
                             </div>
                             <div style="padding:12px; display:flex; flex-direction:column; gap:4px;">
                                 <div style="font-weight:700; color:white; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${movie.title}</div>
-                                <div style="font-size:0.8rem; color:var(--aurora-cyan);">${genres}</div>
+                                <div style="font-size:0.8rem; color:var(--streamora-cyan);">${genres}</div>
                                 <div style="font-size:0.8rem; color:var(--text-muted);">${runtime}</div>
                             </div>
                         </div>
@@ -3210,7 +3210,7 @@ window.executeSearchPageQuery = async function(query) {
                 <div style="font-size:3rem; margin-bottom:15px;">🔍</div>
                 <h3>No results found for "${query}"</h3>
                 <p>Try searching for a different movie, genre, director, or click one of the suggestions below.</p>
-                <button onclick="renderSearchEmptyState()" style="margin-top:20px; padding:10px 20px; border-radius:var(--r-pill); background:var(--aurora-cyan); border:none; color:black; font-weight:700; cursor:pointer;">Reset Search</button>
+                <button onclick="renderSearchEmptyState()" style="margin-top:20px; padding:10px 20px; border-radius:var(--r-pill); background:var(--streamora-cyan); border:none; color:black; font-weight:700; cursor:pointer;">Reset Search</button>
             </div>
         `;
     }
@@ -3274,7 +3274,7 @@ function renderHero(movie) {
     const poster = movie.poster_url || placeholder(title);
     const score = m.match_percentage || randScore();
     const rating = m.rating || '8.2';
-    const synopsis = m.story_summary || movie.overview || 'A cinematic masterpiece recommended by Aurora AI.';
+    const synopsis = m.story_summary || movie.overview || 'A cinematic masterpiece recommended by Streamora AI.';
     const genres = (m.genres || m.tags || ['Drama']).slice(0, 4).map(g => `<span class="gpill">${g}</span>`).join('');
     const castString = getMovieCast(title) || 'Cast details unavailable';
     const languages = getMovieLanguages(movie);
@@ -3291,7 +3291,7 @@ function renderHero(movie) {
                 <!-- Left Column: Details -->
                 <div class="hero__left">
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; justify-content: flex-start;">
-                        <span class="hero__match" style="margin-bottom: 0; box-shadow: 0 4px 12px rgba(6,182,212,0.25);">★ ${score}% Aurora Match</span>
+                        <span class="hero__match" style="margin-bottom: 0; box-shadow: 0 4px 12px rgba(6,182,212,0.25);">★ ${score}% Streamora Match</span>
                         <span style="color: #f5c518; font-weight: 700; font-size: 0.95rem; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid rgba(255,255,255,0.1);">IMDb ${rating}</span>
                     </div>
                     <h1 class="hero__title" onclick="openModal(${movie.item_id})" style="cursor: pointer;">${title}</h1>
@@ -3320,16 +3320,16 @@ function renderHero(movie) {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> View Details
                         </button>
                         
-                        <button class="hero-fav-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Favorites' : 'Add to Favorites'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        <button class="hero-fav-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--streamora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Favorites' : 'Add to Favorites'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
                             ${saved 
-                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--streamora-cyan)" stroke="var(--streamora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                 : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
                             }
                         </button>
                         
-                        <button class="hero-watchlist-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Watchlist' : 'Add to Watchlist'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        <button class="hero-watchlist-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); toggleFavorite(${movie.item_id})" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); border-radius: var(--r-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--streamora-cyan)' : 'white'}; cursor: pointer; transition: all var(--t-fast);" title="${saved ? 'Remove from Watchlist' : 'Add to Watchlist'}" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
                             ${saved 
-                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aurora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+                                ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--streamora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
                                 : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
                             }
                         </button>
@@ -3374,9 +3374,9 @@ function appendRow(title, movies) {
             <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
                 <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
                 <div class="card-3d__badge">${score}%</div>
-                <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--aurora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--streamora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                     ${saved 
-                        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--streamora-cyan)" stroke="var(--streamora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                         : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
                     }
                 </button>
@@ -3393,7 +3393,7 @@ function appendRow(title, movies) {
                     </div>
                     <div class="card-expand__genres">${genres}</div>
                     <div class="card-expand__ai">
-                        <div class="card-expand__ai-label">Why Aurora Picked This</div>
+                        <div class="card-expand__ai-label">Why Streamora Picked This</div>
                         <ul>
                             <li>Matches your preferred genres</li>
                             <li>High thematic similarity</li>
@@ -3569,7 +3569,7 @@ function generateAudienceMatch(movie) {
 
     // Safe genre-based fallback
     if (result.length < 3) {
-        const fallbacks = ['Cinema Buffs', 'Storytelling Enthusiasts', 'Aurora Recommendation Seekers', 'Cinematic Experience Lovers'];
+        const fallbacks = ['Cinema Buffs', 'Storytelling Enthusiasts', 'Streamora Recommendation Seekers', 'Cinematic Experience Lovers'];
         genres.forEach(g => {
             const tag = `${g} Fans`;
             if (!result.includes(tag)) {
@@ -3601,7 +3601,7 @@ function renderModalData(m, id) {
     document.getElementById('modal-backdrop').style.backgroundImage = `url('${bgUrl}')`;
     
     const typeLabel = isSeries({ item_id: id, rich_metadata: m, title: m.title }) ? 'TV Series' : 'Movie';
-    document.getElementById('modal-match').innerHTML = `${m.match_percentage || 85}% Match <span style="margin-left: 8px; padding: 2px 6px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 4px; color: var(--aurora-cyan); font-size: 0.8rem; font-weight: 700; display: inline-block;">${typeLabel}</span>`;
+    document.getElementById('modal-match').innerHTML = `${m.match_percentage || 85}% Match <span style="margin-left: 8px; padding: 2px 6px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 4px; color: var(--streamora-cyan); font-size: 0.8rem; font-weight: 700; display: inline-block;">${typeLabel}</span>`;
     document.getElementById('modal-year').textContent = m.year || '';
     document.getElementById('modal-rating').textContent = m.rating ? `IMDB ${m.rating}` : '';
     document.getElementById('modal-runtime').textContent = m.runtime || '';
@@ -3669,7 +3669,7 @@ function renderModalData(m, id) {
     }
     document.getElementById('modal-awards').textContent = awards;
     
-    let availability = m.availability || 'Available on Aurora Premium streaming (4K UHD)';
+    let availability = m.availability || 'Available on Streamora Premium streaming (4K UHD)';
     document.getElementById('modal-availability').textContent = availability;
 
     const seedMovie = globalMovies.find(item => item.item_id === id) || FALLBACK_MOVIES.find(item => item.item_id === id) || { item_id: id, rich_metadata: m, title: m.title };
@@ -3731,7 +3731,7 @@ function renderModalData(m, id) {
                         <div class="sim-title">${sm.title}</div>
                         <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
                             <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
-                            <span class="sim-type" style="color:var(--aurora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
+                            <span class="sim-type" style="color:var(--streamora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
                             <span class="sim-rating-imdb" style="color:#fbbf24;">★ ${rating}</span>
                         </div>
                         <div class="sim-genres-text" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${genresList} (${year})</div>
@@ -3841,7 +3841,7 @@ window.updateBreadcrumbs = function() {
         
         const isActive = idx === window.modalHistoryIndex;
         if (isActive) {
-            return `<span style="color: var(--aurora-cyan); font-weight: 600;">${title}</span>`;
+            return `<span style="color: var(--streamora-cyan); font-weight: 600;">${title}</span>`;
         } else {
             return `<span style="cursor: pointer; text-decoration: none;" onclick="navigateModalHistory(${idx})">${title}</span>`;
         }
@@ -4011,9 +4011,9 @@ window.updateCardHearts = function(id) {
     heartBtns.forEach(btn => {
         btn.classList.toggle('favorited', isFav);
         btn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
-        btn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        btn.style.color = isFav ? 'var(--streamora-cyan)' : 'white';
         btn.innerHTML = isFav 
-            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--streamora-cyan)" stroke="var(--streamora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
             : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
     });
 };
@@ -4024,16 +4024,16 @@ window.updateHeroSaveBtn = function(id) {
     const isFav = isInMyList(id);
     
     if (favBtn) {
-        favBtn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        favBtn.style.color = isFav ? 'var(--streamora-cyan)' : 'white';
         favBtn.innerHTML = isFav 
-            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--aurora-cyan)" stroke="var(--aurora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--streamora-cyan)" stroke="var(--streamora-cyan)" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
             : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
     }
     
     if (watchlistBtn) {
-        watchlistBtn.style.color = isFav ? 'var(--aurora-cyan)' : 'white';
+        watchlistBtn.style.color = isFav ? 'var(--streamora-cyan)' : 'white';
         watchlistBtn.innerHTML = isFav 
-            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aurora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+            ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--streamora-cyan)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
             : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
     }
 };
@@ -4136,7 +4136,7 @@ function emptyStateHTML() {
     return `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:0 20px;">
             <h2 style="font-size:2.2rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;">What would you like to watch?</h2>
-            <p style="color:var(--text-muted);margin-bottom:40px;max-width:500px;">Explore categories or ask Aurora AI for personalized recommendations.</p>
+            <p style="color:var(--text-muted);margin-bottom:40px;max-width:500px;">Explore categories or ask Streamora AI for personalized recommendations.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:600px;">
                 ${cats.map(c => `
                     <button onclick="aiPanel.classList.add('open');chatInput.value='Recommend ${c.toLowerCase()} movies';handleSend();"
@@ -4167,7 +4167,7 @@ window.openDrawerOption = function(option) {
                 <h2>👤 Account Details</h2>
                 <div class="modal-info-group">
                     <span class="modal-info-label">Membership Tier</span>
-                    <span class="modal-info-value">Aurora Cinematic Premium (4K UHD)</span>
+                    <span class="modal-info-value">Streamora Cinematic Premium (4K UHD)</span>
                 </div>
                 <div class="modal-info-group">
                     <span class="modal-info-label">Current User</span>
@@ -4185,9 +4185,9 @@ window.openDrawerOption = function(option) {
             `;
             break;
         case 'settings':
-            const autoplay = localStorage.getItem('aurora_autoplay') !== 'false';
-            const quality = localStorage.getItem('aurora_quality') || 'auto';
-            const motion = localStorage.getItem('aurora_reduced_motion') === 'true';
+            const autoplay = localStorage.getItem('streamora_autoplay') !== 'false';
+            const quality = localStorage.getItem('streamora_quality') || 'auto';
+            const motion = localStorage.getItem('streamora_reduced_motion') === 'true';
             
             html = `
                 <h2>⚙️ Settings</h2>
@@ -4216,13 +4216,13 @@ window.openDrawerOption = function(option) {
             `;
             break;
         case 'theme':
-            const currentTheme = localStorage.getItem('aurora_theme') || 'neon';
+            const currentTheme = localStorage.getItem('streamora_theme') || 'neon';
             html = `
                 <h2>🎨 Theme Preferences</h2>
                 <div class="modal-form-row">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <input type="radio" name="theme-choice" value="neon" ${currentTheme === 'neon' ? 'checked' : ''} style="width: 20px; height: 20px;">
-                        <span>Aurora Neon (Default Cyberpunk)</span>
+                        <span>Streamora Neon (Default Cyberpunk)</span>
                     </label>
                 </div>
                 <div class="modal-form-row">
@@ -4287,8 +4287,8 @@ window.openDrawerOption = function(option) {
                 <h2>❓ Help Centre</h2>
                 <div style="display:flex; flex-direction:column; gap:16px; max-height: 40vh; overflow-y:auto; margin-bottom:20px; padding-right:8px;">
                     <div>
-                        <h4 style="color:white; margin-bottom:6px;">Q: How does Aurora AI recommend movies?</h4>
-                        <p style="font-size:0.9rem; line-height:1.4; color:var(--text-secondary)">A: Aurora uses vector embeddings to understand movie themes and match them to your taste based on click signals.</p>
+                        <h4 style="color:white; margin-bottom:6px;">Q: How does Streamora AI recommend movies?</h4>
+                        <p style="font-size:0.9rem; line-height:1.4; color:var(--text-secondary)">A: Streamora uses vector embeddings to understand movie themes and match them to your taste based on click signals.</p>
                     </div>
                     <div>
                         <h4 style="color:white; margin-bottom:6px;">Q: How do I save items to my watchlist?</h4>
@@ -4296,7 +4296,7 @@ window.openDrawerOption = function(option) {
                     </div>
                     <div>
                         <h4 style="color:white; margin-bottom:6px;">Q: Can I use conversational search?</h4>
-                        <p style="font-size:0.9rem; line-height:1.4; color:var(--text-secondary)">A: Yes! Open the Search tab to chat directly with the Aurora Assistant, e.g. "Suggest some dark thrillers".</p>
+                        <p style="font-size:0.9rem; line-height:1.4; color:var(--text-secondary)">A: Yes! Open the Search tab to chat directly with the Streamora Assistant, e.g. "Suggest some dark thrillers".</p>
                     </div>
                 </div>
                 <button class="modal-submit-btn" onclick="closeDrawerModalDirect()">Done</button>
@@ -4305,7 +4305,7 @@ window.openDrawerOption = function(option) {
         case 'logout':
             html = `
                 <h2>🚪 Log Out</h2>
-                <p style="color:var(--text-secondary); margin-bottom:24px; line-height:1.5;">Are you sure you want to log out of Aurora AI?</p>
+                <p style="color:var(--text-secondary); margin-bottom:24px; line-height:1.5;">Are you sure you want to log out of Streamora AI?</p>
                 <div style="display:flex; gap:12px;">
                     <button class="modal-submit-btn" onclick="performLogOut()" style="background:#ef4444; color:white; margin-top:0;">Log Out</button>
                     <button class="modal-submit-btn" onclick="closeDrawerModalDirect()" style="background:rgba(255,255,255,0.08); color:white; margin-top:0;">Cancel</button>
@@ -4323,9 +4323,9 @@ window.saveSettings = function() {
     const quality = document.getElementById('settings-quality').value;
     const motion = document.getElementById('settings-motion').checked;
     
-    localStorage.setItem('aurora_autoplay', autoplay);
-    localStorage.setItem('aurora_quality', quality);
-    localStorage.setItem('aurora_reduced_motion', motion);
+    localStorage.setItem('streamora_autoplay', autoplay);
+    localStorage.setItem('streamora_quality', quality);
+    localStorage.setItem('streamora_reduced_motion', motion);
     
     if (motion) {
         document.body.classList.add('reduced-motion');
@@ -4352,7 +4352,7 @@ window.submitFeedback = function() {
 
 window.performLogOut = function() {
     closeDrawerModalDirect();
-    alert('You have logged out of Aurora AI.');
+    alert('You have logged out of Streamora AI.');
 };
 
 // ══════════════════════════════════════════════════════════════════════
@@ -4550,7 +4550,7 @@ window.loadMoreModalSimilar = function() {
                         <div class="sim-title">${sm.title}</div>
                         <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
                             <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
-                            <span class="sim-type" style="color:var(--aurora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
+                            <span class="sim-type" style="color:var(--streamora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
                             <span class="sim-rating-imdb" style="color:#fbbf24;">★ ${rating}</span>
                         </div>
                         <div class="sim-genres-text" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${genresList} (${year})</div>

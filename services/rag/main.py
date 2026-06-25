@@ -1,5 +1,5 @@
 """
-AURORA AI - Enterprise RAG & Graph Intelligence Service
+STREAMORA AI - Enterprise RAG & Graph Intelligence Service
 
 Combines the Knowledge Graph engine and local LLM to generate
 natural language explanations for recommendations.
@@ -16,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 from services.graph.engine import graph_engine
 from services.rag.llm import llm_provider
 
-app = FastAPI(title="AURORA AI - RAG & Graph Intelligence")
+app = FastAPI(title="STREAMORA AI - RAG & Graph Intelligence")
 
 # Load movies metadata for title lookup
 movies_df = pd.DataFrame()
@@ -177,6 +177,6 @@ def explain_similarity(request: ExplainSimilarityRequest):
 @app.get("/")
 def health():
     return {
-        "status": "AURORA AI RAG Service Running",
+        "status": "STREAMORA AI RAG Service Running",
         "graph_ready": graph_engine.built
     }

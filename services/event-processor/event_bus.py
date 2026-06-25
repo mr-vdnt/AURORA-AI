@@ -1,5 +1,5 @@
 """
-AURORA AI - Event Bus
+STREAMORA AI - Event Bus
 
 A lightweight in-process event bus that simulates Kafka-like topic/consumer patterns.
 Designed to be swapped out for real Kafka (confluent-kafka) in production.

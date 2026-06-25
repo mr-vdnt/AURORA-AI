@@ -1,5 +1,5 @@
 """
-AURORA AI - Agent Core Logic
+STREAMORA AI - Agent Core Logic
 
 Uses NLP to classify user intent and route to the correct tool.
 """
@@ -247,7 +247,7 @@ class OrchestratorAgent:
                             "backdrop_url": r.get('backdrop_url', ''),
                             "overview": r.get('overview', ''),
                             "rich_metadata": _get_movie_metadata(r),
-                            "explanation": "Recommended by Aurora AI."
+                            "explanation": "Recommended by Streamora AI."
                         })
                 else:
                     response_data = []

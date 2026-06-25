@@ -1,5 +1,5 @@
 """
-AURORA AI - Real-Time Event Processing Service
+STREAMORA AI - Real-Time Event Processing Service
 
 Unified service that:
   1. Ingests events via REST API (simulating Kafka producer)
@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
     print("[EventProcessor] Shut down.")
 
 
-app = FastAPI(title="AURORA AI - Real-Time Event Processing Service", lifespan=lifespan)
+app = FastAPI(title="STREAMORA AI - Real-Time Event Processing Service", lifespan=lifespan)
 
 
 # ── Event Ingestion Endpoints ───────────────────────────────────────
@@ -158,7 +158,7 @@ def get_visual_features(item_id: int):
 @app.get("/")
 def health():
     return {
-        "status": "AURORA AI Event Processing Service Running",
+        "status": "STREAMORA AI Event Processing Service Running",
         "events_published": event_bus.event_count,
         "events_processed": stream_processor.processed_count,
         "feature_store": feature_store.get_stats(),

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('aurora_token');
-    const role = localStorage.getItem('aurora_role');
+    const token = localStorage.getItem('streamora_token');
+    const role = localStorage.getItem('streamora_role');
     const loginOverlay = document.getElementById('admin-login-overlay');
     const adminContent = document.getElementById('admin-content');
     
@@ -41,9 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout
     document.getElementById('admin-logout').addEventListener('click', () => {
-        localStorage.removeItem('aurora_token');
-        localStorage.removeItem('aurora_role');
-        localStorage.removeItem('aurora_user_id');
+        localStorage.removeItem('streamora_token');
+        localStorage.removeItem('streamora_role');
+        localStorage.removeItem('streamora_user_id');
         window.location.href = '/';
     });
 });

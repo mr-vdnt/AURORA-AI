@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ======================================================================
-   AURORA AI — 3D Glassmorphism Spatial Design System
+   STREAMORA AI — 3D Glassmorphism Spatial Design System
    Netflix × Apple TV × VisionOS
    ====================================================================== */
 
@@ -19,11 +19,11 @@
   --text-secondary: #B3B3B3;
   --text-muted:     #666666;
 
-  /* Aurora Accents */
-  --aurora-purple: #E50914; /* Netflix Red */
-  --aurora-blue:   #5AA8FF; /* AI Accent Aurora Blue */
-  --aurora-cyan:   #00D8F6; /* Premium Cyan */
-  --aurora-grad:   linear-gradient(135deg, #E50914, #5AA8FF, #00D8F6);
+  /* Streamora Accents */
+  --streamora-purple: #E50914; /* Netflix Red */
+  --streamora-blue:   #5AA8FF; /* AI Accent Streamora Blue */
+  --streamora-cyan:   #00D8F6; /* Premium Cyan */
+  --streamora-grad:   linear-gradient(135deg, #E50914, #5AA8FF, #00D8F6);
   --match-green:   #34C759; /* Apple Success Green */
   --match-gold:    #F5C518; /* IMDb rating Gold */
 
@@ -99,7 +99,7 @@ img{display:block;max-width:100%}
 
 /* Focus */
 a:focus-visible,button:focus-visible,input:focus-visible{
-  outline:2px solid var(--aurora-cyan);outline-offset:2px;
+  outline:2px solid var(--streamora-cyan);outline-offset:2px;
 }
 /* Scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -134,14 +134,14 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 }
 .sidebar__logo-icon{
   font-size:1.5rem;
-  background:var(--aurora-grad);
+  background:var(--streamora-grad);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 0 12px rgba(139,92,246,0.5));
   flex-shrink:0;width:40px;text-align:center;
 }
 .sidebar__logo-text{
   font-size:1.3rem;font-weight:800;letter-spacing:2px;
-  background:var(--aurora-grad);
+  background:var(--streamora-grad);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   opacity:0;transition:opacity var(--t-base);
 }
@@ -179,7 +179,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 .sidebar__link.active{
   color:var(--text-primary);
   background:rgba(255,255,255,0.08);
-  box-shadow: inset 3px 0 0 var(--aurora-cyan), 0 0 15px rgba(6, 182, 212, 0.15);
+  box-shadow: inset 3px 0 0 var(--streamora-cyan), 0 0 15px rgba(6, 182, 212, 0.15);
   backdrop-filter: blur(8px);
 }
 
@@ -324,7 +324,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--aurora-cyan);
+  background: var(--streamora-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,7 +342,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   gap: 6px;
   padding: 6px 16px;
   border-radius: var(--r-pill);
-  background: var(--aurora-grad);
+  background: var(--streamora-grad);
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
@@ -607,7 +607,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 }
 .card-expand__ai-label{
   font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;
-  color:var(--aurora-purple);font-weight:700;margin-bottom:8px;
+  color:var(--streamora-purple);font-weight:700;margin-bottom:8px;
 }
 .card-expand__ai ul{list-style:none}
 .card-expand__ai li{
@@ -653,7 +653,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   display:flex;align-items:center;gap:8px;
 }
 .ai-glow{
-  background:var(--aurora-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background:var(--streamora-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 0 8px rgba(139,92,246,0.5));
 }
 .ai-panel__close{color:var(--text-muted);font-size:1.3rem;padding:4px}
@@ -693,7 +693,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 }
 .ai-panel__inputbar button{
   width:36px;height:36px;border-radius:50%;
-  background:var(--aurora-grad);color:#fff;
+  background:var(--streamora-grad);color:#fff;
   display:flex;align-items:center;justify-content:center;
   transition:transform var(--t-fast);flex-shrink:0;
 }
@@ -797,7 +797,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 }
 .modal-hero__badge{
   display:inline-block;padding:4px 12px;border-radius:var(--r-sm);
-  background:var(--aurora-grad);font-size:0.85rem;font-weight:700;
+  background:var(--streamora-grad);font-size:0.85rem;font-weight:700;
   color:#fff;margin-bottom:12px;
 }
 .modal-hero__title{
@@ -847,7 +847,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 .site-footer__inner{text-align:center}
 .site-footer__brand{
   font-size:1.2rem;font-weight:800;letter-spacing:2px;
-  background:var(--aurora-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background:var(--streamora-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .site-footer__links{
   margin:16px 0;display:flex;justify-content:center;gap:24px;
@@ -1154,9 +1154,9 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   max-width: 70ch;
 }
 
-.aurora-reason-box { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 24px; }
-.aurora-reason-box h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 15px 0; font-size: 1.2rem; color: #fff; }
-.aurora-reason-box p { margin: 0; line-height: 1.5; color: rgba(255,255,255,0.8); }
+.streamora-reason-box { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 24px; }
+.streamora-reason-box h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 15px 0; font-size: 1.2rem; color: #fff; }
+.streamora-reason-box p { margin: 0; line-height: 1.5; color: rgba(255,255,255,0.8); }
 
 .modal-section h3 {
   font-size: clamp(20px, 2.5vw, 28px);
@@ -1312,7 +1312,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   }
 }
 .carousel-arrow:focus-visible {
-  outline: 2px solid var(--aurora-cyan);
+  outline: 2px solid var(--streamora-cyan);
   outline-offset: 2px;
   opacity: 1;
 }
@@ -1340,7 +1340,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 .sim-card:focus-visible {
-  outline: 2px solid var(--aurora-cyan);
+  outline: 2px solid var(--streamora-cyan);
   outline-offset: 4px;
   transform: scale(1.15) translateY(-5px);
   background: rgba(255, 255, 255, 0.08);
@@ -1514,12 +1514,12 @@ a:focus-visible,button:focus-visible,input:focus-visible{
     }
     
     .bottom-nav__item.active {
-        color: var(--aurora-cyan);
+        color: var(--streamora-cyan);
         text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
     }
     
     .bottom-nav__item.active svg {
-        stroke: var(--aurora-cyan);
+        stroke: var(--streamora-cyan);
         transform: translateY(-2px);
         filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.5));
     }
@@ -1585,7 +1585,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
         font-size: 1.15rem;
         font-weight: 800;
         letter-spacing: 1.5px;
-        background: var(--aurora-grad);
+        background: var(--streamora-grad);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -1685,7 +1685,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
     font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: 1.5px;
-    background: var(--aurora-grad);
+    background: var(--streamora-grad);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -1866,12 +1866,12 @@ a:focus-visible,button:focus-visible,input:focus-visible{
     transition: border-color 0.2s;
 }
 .modal-form-row input:focus, .modal-form-row select:focus, .modal-form-row textarea:focus {
-    border-color: var(--aurora-cyan);
+    border-color: var(--streamora-cyan);
 }
 .modal-submit-btn {
     width: 100%;
     padding: 12px;
-    background: var(--aurora-cyan);
+    background: var(--streamora-cyan);
     color: black;
     border-radius: var(--r-pill);
     font-weight: 700;
@@ -1922,9 +1922,9 @@ a:focus-visible,button:focus-visible,input:focus-visible{
     opacity: 0.85;
 }
 .format-tab.active {
-    background: var(--aurora-grad);
+    background: var(--streamora-grad);
     color: white;
-    border-color: var(--aurora-cyan);
+    border-color: var(--streamora-cyan);
     opacity: 1;
     box-shadow: 0 0 15px rgba(6, 182, 212, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -2043,7 +2043,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 #modal-characteristics span {
   background: rgba(6, 182, 212, 0.08);
   border: 1px solid rgba(6, 182, 212, 0.22);
-  color: var(--aurora-cyan);
+  color: var(--streamora-cyan);
   padding: 5px 12px;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -2478,7 +2478,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 }
 .storage-bar-inner {
   height: 100%;
-  background: var(--aurora-cyan);
+  background: var(--streamora-cyan);
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
   transition: width 0.5s ease-out;
@@ -2522,7 +2522,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: var(--aurora-cyan);
+  background: var(--streamora-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
