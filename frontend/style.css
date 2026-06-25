@@ -1233,6 +1233,90 @@ a:focus-visible,button:focus-visible,input:focus-visible{
 .modal-similar-row, .modal-cast-row { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
 .modal-similar-row::-webkit-scrollbar, .modal-cast-row::-webkit-scrollbar { display: none; }
 
+/* Carousel Container and Edge Fades */
+.modal-similar-container {
+  position: relative;
+  width: 100%;
+}
+.modal-similar-container::before,
+.modal-similar-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+.modal-similar-container::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(15, 15, 15, 0.95) 0%, rgba(15, 15, 15, 0) 100%);
+}
+.modal-similar-container::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(15, 15, 15, 0.95) 0%, rgba(15, 15, 15, 0) 100%);
+}
+.modal-similar-container.has-left-scroll::before {
+  opacity: 1;
+}
+.modal-similar-container.has-right-scroll::after {
+  opacity: 1;
+}
+
+/* Glassmorphic Carousel Arrows */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(15, 15, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+}
+.carousel-arrow--left {
+  left: -22px;
+}
+.carousel-arrow--right {
+  right: -22px;
+}
+@media (min-width: 1025px) {
+  .modal-similar-container:hover .carousel-arrow {
+    opacity: 1;
+  }
+  .carousel-arrow:hover {
+    background: rgba(15, 15, 20, 0.85);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.1);
+  }
+  .carousel-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+}
+@media (max-width: 1024px) {
+  .carousel-arrow {
+    display: none !important;
+  }
+}
+.carousel-arrow:focus-visible {
+  outline: 2px solid var(--aurora-cyan);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
 /* Recommendation Card Sizing & Layout */
 .sim-card {
   width: 220px;
@@ -1241,7 +1325,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   flex-direction: column;
   gap: 8px;
   cursor: pointer;
-  transition: transform var(--t-fast);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.3s, border-color 0.3s, box-shadow 0.3s;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
@@ -1249,9 +1333,19 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   box-sizing: border-box;
 }
 .sim-card:hover {
-  transform: scale(1.03) translateY(-2px);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  transform: scale(1.15) translateY(-5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+.sim-card:focus-visible {
+  outline: 2px solid var(--aurora-cyan);
+  outline-offset: 4px;
+  transform: scale(1.15) translateY(-5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  z-index: 10;
 }
 .sim-poster {
   width: 100%;

@@ -3726,8 +3726,8 @@ function renderModalData(m, id) {
                 const typeLabel = isSeries(sm) ? 'TV Series' : 'Movie';
 
                 return `
-                    <div class="sim-card" onclick="openModal(${sm.item_id})">
-                        <img src="${poster}" alt="${sm.title}" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
+                    <div class="sim-card" tabindex="0" onclick="openModal(${sm.item_id})" aria-label="${sm.title}, ${typeLabel}, Match ${r.score} percent, Rating ${rating}">
+                        <img src="${poster}" alt="" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
                         <div class="sim-title">${sm.title}</div>
                         <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
                             <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
@@ -3740,12 +3740,15 @@ function renderModalData(m, id) {
                 `;
             }).join('');
 
-            // Attach infinite scroll loader
+            // Attach infinite scroll loader and arrow state updater
             simContainer.addEventListener('scroll', () => {
                 if (simContainer.scrollWidth - simContainer.scrollLeft - simContainer.clientWidth < 300) {
                     if (typeof window.loadMoreModalSimilar === 'function') {
                         window.loadMoreModalSimilar();
                     }
+                }
+                if (typeof window.updateCarouselArrows === 'function') {
+                    window.updateCarouselArrows();
                 }
             }, { passive: true });
 
@@ -3753,6 +3756,13 @@ function renderModalData(m, id) {
             if (typeof window.setupHorizontalScroll === 'function') {
                 window.setupHorizontalScroll(simContainer);
             }
+            
+            // Initial call to set arrow state
+            setTimeout(() => {
+                if (typeof window.updateCarouselArrows === 'function') {
+                    window.updateCarouselArrows();
+                }
+            }, 100);
         } else {
             simContainer.innerHTML = '<p>No similar titles found.</p>';
         }
@@ -4535,8 +4545,8 @@ window.loadMoreModalSimilar = function() {
                 const typeLabel = isSeries(sm) ? 'TV Series' : 'Movie';
                 
                 const cardHtml = `
-                    <div class="sim-card" onclick="openModal(${sm.item_id})">
-                        <img src="${poster}" alt="${sm.title}" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
+                    <div class="sim-card" tabindex="0" onclick="openModal(${sm.item_id})" aria-label="${sm.title}, ${typeLabel}, Match ${r.score} percent, Rating ${rating}">
+                        <img src="${poster}" alt="" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
                         <div class="sim-title">${sm.title}</div>
                         <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
                             <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
@@ -4552,8 +4562,123 @@ window.loadMoreModalSimilar = function() {
                 tempDiv.innerHTML = cardHtml;
                 simContainer.appendChild(tempDiv.firstElementChild);
             });
+            if (typeof window.updateCarouselArrows === 'function') {
+                window.updateCarouselArrows();
+            }
         }
     }
     
     window.modalLoadingMore = false;
 };
+
+// ══════════════════════════════════════════════════════════════════════
+//  CAROUSEL UPGRADES: Navigation, Edge Fades & Accessibility
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * Scroll the recommendation carousel by direction (1 for right, -1 for left)
+ * Scrolls by approximately 2 recommendation card widths (~320px)
+ */
+window.scrollSimilarCarousel = function(direction) {
+    const simContainer = document.getElementById('modal-similar');
+    if (simContainer) {
+        const scrollAmount = 320 * direction;
+        simContainer.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+};
+
+/**
+ * Update the visibility of Left/Right scroll arrows and side gradient overlays
+ * based on the container's current scrollLeft offset.
+ */
+window.updateCarouselArrows = function() {
+    const simContainer = document.getElementById('modal-similar');
+    const containerWrapper = document.getElementById('modal-similar-container');
+    
+    if (simContainer && containerWrapper) {
+        const leftArrow = containerWrapper.querySelector('.carousel-arrow--left');
+        const rightArrow = containerWrapper.querySelector('.carousel-arrow--right');
+        
+        const scrollLeft = simContainer.scrollLeft;
+        const scrollWidth = simContainer.scrollWidth;
+        const clientWidth = simContainer.clientWidth;
+        
+        // Left scroll status
+        if (scrollLeft > 4) {
+            if (leftArrow) leftArrow.style.display = 'flex';
+            containerWrapper.classList.add('has-left-scroll');
+        } else {
+            if (leftArrow) leftArrow.style.display = 'none';
+            containerWrapper.classList.remove('has-left-scroll');
+        }
+        
+        // Right scroll status (use buffer for subpixels / rounding)
+        if (scrollLeft + clientWidth < scrollWidth - 4) {
+            if (rightArrow) rightArrow.style.display = 'flex';
+            containerWrapper.classList.add('has-right-scroll');
+        } else {
+            if (rightArrow) rightArrow.style.display = 'none';
+            containerWrapper.classList.remove('has-right-scroll');
+        }
+    }
+};
+
+// Edge-Awareness Hover Scaling: Determine transform-origin dynamically on hover / focus
+const updateTransformOrigin = (e) => {
+    const card = e.target.closest('.sim-card');
+    if (!card) return;
+    
+    const container = document.getElementById('modal-similar');
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    
+    const leftDist = cardRect.left - containerRect.left;
+    const rightDist = containerRect.right - cardRect.right;
+    
+    // Threshold to switch transform-origins (in pixels)
+    const edgeThreshold = 40;
+    
+    if (leftDist < edgeThreshold) {
+        card.style.transformOrigin = 'left center';
+    } else if (rightDist < edgeThreshold) {
+        card.style.transformOrigin = 'right center';
+    } else {
+        card.style.transformOrigin = 'center center';
+    }
+};
+
+// Capture-phase listeners to support dynamic recommendations loading
+document.addEventListener('mouseenter', updateTransformOrigin, true);
+document.addEventListener('focusin', updateTransformOrigin, true);
+
+// Accessibility Keyboard Navigation: Arrow Keys to traverse, Enter/Space to select
+document.addEventListener('keydown', (e) => {
+    const card = e.target.closest('.sim-card');
+    if (!card) return;
+    
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const cards = Array.from(document.querySelectorAll('#modal-similar .sim-card'));
+        const index = cards.indexOf(card);
+        if (index !== -1) {
+            const nextIndex = index + (e.key === 'ArrowRight' ? 1 : -1);
+            if (nextIndex >= 0 && nextIndex < cards.length) {
+                const nextCard = cards[nextIndex];
+                nextCard.focus();
+                nextCard.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
+            }
+        }
+    } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
+    }
+});
