@@ -198,23 +198,23 @@ const FALLBACK_MOVIES = [
             title: "The Batman",
             year: "2022",
             match_percentage: 92,
-            rating: 8.1,
+            rating: 8.3,
             runtime: "176 min",
             director: "Matt Reeves",
             genres: ["Crime", "Mystery", "Thriller"],
             tags: ["Crime", "Mystery", "Thriller"],
             audience_type: "Adult",
             story_summary: "In his second year of fighting crime, Batman uncovers corruption in Gotham City that connects to his own family while facing a serial killer known as the Riddler.",
-            why_recommended: "Recommended because it aligns with your interest in gritty crime thrillers and mystery-solving arcs.",
-            themes: ["Vengeance", "Corruption", "Justice", "Secrets"],
-            moods: ["Gritty", "Dark", "Suspenseful", "Intense"],
-            pacing: "Steady",
-            complexity: "High",
-            world_building: "Exceptional",
+            why_recommended: "Recommended for its dark mystery detective elements and excellent atmospheric cinematography.",
+            themes: ["Vengeance", "Corruption", "Justice", "Family Secrets"],
+            moods: ["Gritty", "Dark", "Atmospheric"],
+            pacing: "Slow Burn",
+            complexity: "Medium",
+            world_building: "Rich",
             action_level: "Medium",
-            violence_level: "High",
-            language_severity: "Strong",
-            adult: true,
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
             similar_movies: [
                 { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 85 },
                 { item_id: 3, title: "No Exit", poster_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg", score: 80 }
@@ -224,30 +224,30 @@ const FALLBACK_MOVIES = [
     {
         item_id: 3,
         title: "No Exit",
-        poster_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg",
-        backdrop_url: "https://image.tmdb.org/t/p/original/vDHsLnOWKlPGmWs0kGfuhNF4w5l.jpg",
-        overview: "Stranded at a rest stop in the mountains during a blizzard, a recovering addict discovers a kidnapped child hidden in a car belonging to one of the people inside the building.",
+        poster_url: "https://placehold.co/400x600/111/333?text=No+Exit",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=No+Exit",
+        overview: "During a blizzard and stranded at a highway rest stop in the mountains, a college student discovers a kidnapped child hidden in a car belonging to one of the people inside.",
         rich_metadata: {
             title: "No Exit",
             year: "2022",
-            match_percentage: 88,
-            rating: 6.3,
+            match_percentage: 84,
+            rating: 6.1,
             runtime: "95 min",
             director: "Damien Power",
             genres: ["Thriller"],
             tags: ["Thriller"],
             audience_type: "Adult",
-            story_summary: "Stranded at a rest stop in the mountains during a blizzard, a recovering addict discovers a kidnapped child hidden in a car belonging to one of the people inside the building.",
-            why_recommended: "Recommended because it fits your preference for high-stakes suspense thrillers.",
-            themes: ["Survival", "Deception", "Trust"],
-            moods: ["Suspenseful", "Intense", "Gritty"],
+            story_summary: "During a blizzard and stranded at a highway rest stop in the mountains, a college student discovers a kidnapped child hidden in a car belonging to one of the people inside.",
+            why_recommended: "Recommended because it is a fast-paced mystery thriller with constant high stakes.",
+            themes: ["Survival", "Trust", "Deception"],
+            moods: ["Suspenseful", "Intense", "Claustrophobic"],
             pacing: "Fast-Paced",
             complexity: "Medium",
             world_building: "Standard",
-            action_level: "Medium",
+            action_level: "High",
             violence_level: "High",
             language_severity: "Strong",
-            adult: true,
+            adult: false,
             similar_movies: [
                 { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 79 }
             ]
@@ -258,26 +258,26 @@ const FALLBACK_MOVIES = [
         title: "Encanto",
         poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg",
         backdrop_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg",
-        overview: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place.",
+        overview: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family with a unique gift from super strength to the power to heal—every child except one, Mirabel.",
         rich_metadata: {
             title: "Encanto",
             year: "2021",
-            match_percentage: 94,
-            rating: 7.7,
+            match_percentage: 90,
+            rating: 7.2,
             runtime: "102 min",
             director: "Jared Bush",
             genres: ["Animation", "Comedy", "Family", "Fantasy"],
             tags: ["Animation", "Comedy", "Family", "Fantasy"],
             audience_type: "Family Friendly",
-            story_summary: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place.",
-            why_recommended: "Recommended because you enjoy heartwarming, magical family animations.",
-            themes: ["Family", "Destiny", "Identity", "Acceptance"],
-            moods: ["Lighthearted", "Emotional", "Captivating"],
+            story_summary: "The tale of an extraordinary family, the Madrigals, who live hidden in the mountains of Colombia, in a magical house, in a vibrant town, in a wondrous, charmed place called an Encanto. The magic of the Encanto has blessed every child in the family with a unique gift from super strength to the power to heal—every child except one, Mirabel.",
+            why_recommended: "Recommended for its heartwarming family themes, gorgeous animation, and catchy musical numbers.",
+            themes: ["Family Burden", "Self-Worth", "Identity", "Acceptance"],
+            moods: ["Uplifting", "Emotional", "Joyful"],
             pacing: "Steady",
-            complexity: "Low",
+            complexity: "Medium",
             world_building: "Rich",
-            action_level: "Low",
-            violence_level: "Low",
+            action_level: "Medium",
+            violence_level: "None",
             language_severity: "None",
             adult: false,
             similar_movies: [
@@ -290,28 +290,28 @@ const FALLBACK_MOVIES = [
         title: "The King's Man",
         poster_url: "https://image.tmdb.org/t/p/original/aq4Pwv5Xeuvj6HZKtxyd23e6bE9.jpg",
         backdrop_url: "https://image.tmdb.org/t/p/original/aq4Pwv5Xeuvj6HZKtxyd23e6bE9.jpg",
-        overview: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them.",
+        overview: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them. Discover the origins of the very first independent intelligence agency in The King's Man.",
         rich_metadata: {
             title: "The King's Man",
             year: "2021",
             match_percentage: 85,
-            rating: 7.0,
+            rating: 6.3,
             runtime: "131 min",
             director: "Matthew Vaughn",
             genres: ["Action", "Adventure", "Thriller", "War"],
             tags: ["Action", "Adventure", "Thriller", "War"],
             audience_type: "Adult",
-            story_summary: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them.",
-            why_recommended: "Recommended because of its historical context and high-octane spy adventure themes.",
-            themes: ["War & Peace", "Duty", "Honor", "Survival"],
-            moods: ["Epic", "Exciting", "Intense"],
+            story_summary: "As a collection of history's worst tyrants and criminal masterminds gather to plot a war to wipe out millions, one man must race against time to stop them. Discover the origins of the very first independent intelligence agency in The King's Man.",
+            why_recommended: "Recommended for its high-octane action sequences and stylized historical references.",
+            themes: ["Duty", "Legacy", "Origin Stories", "Espionage"],
+            moods: ["Exciting", "Stylized", "Adventurous"],
             pacing: "Fast-Paced",
             complexity: "Medium",
             world_building: "Rich",
             action_level: "High",
             violence_level: "High",
-            language_severity: "Moderate",
-            adult: true,
+            language_severity: "Strong",
+            adult: false,
             similar_movies: [
                 { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 82 }
             ]
@@ -326,22 +326,22 @@ const FALLBACK_MOVIES = [
         rich_metadata: {
             title: "Interstellar",
             year: "2014",
-            match_percentage: 98,
-            rating: 8.6,
+            match_percentage: 97,
+            rating: 8.7,
             runtime: "169 min",
             director: "Christopher Nolan",
             genres: ["Science Fiction", "Drama", "Adventure"],
             tags: ["Science Fiction", "Drama", "Adventure"],
             audience_type: "General",
             story_summary: "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
-            why_recommended: "Recommended by Aurora AI as a top pick for its breathtaking visual world and deep psychological concepts.",
-            themes: ["Space Exploration", "Survival", "Time", "Humanity", "Sacrifice"],
-            moods: ["Thought-provoking", "Epic", "Emotional"],
+            why_recommended: "Recommended because it is a mind-bending sci-fi epic with profound emotional core and stellar score.",
+            themes: ["Survival", "Time & Space", "Parental Love", "Human Destiny"],
+            moods: ["Epic", "Thought-Provoking", "Atmospheric", "Emotional"],
             pacing: "Steady",
             complexity: "High",
             world_building: "Exceptional",
             action_level: "Medium",
-            violence_level: "Low",
+            violence_level: "Mild",
             language_severity: "Mild",
             adult: false,
             similar_movies: [
@@ -357,6 +357,7 @@ const FALLBACK_MOVIES = [
         overview: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
         rich_metadata: {
             title: "Stranger Things",
+            type: "series",
             year: "2016",
             match_percentage: 96,
             rating: 8.8,
@@ -389,6 +390,7 @@ const FALLBACK_MOVIES = [
         overview: "A sleuthing, supernaturally infused mystery charting Wednesday Addams' years as a student at Nevermore Academy.",
         rich_metadata: {
             title: "Wednesday",
+            type: "series",
             year: "2022",
             match_percentage: 91,
             rating: 8.2,
@@ -476,6 +478,600 @@ const FALLBACK_MOVIES = [
                 { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 81 }
             ]
         }
+    },
+    {
+        item_id: 20,
+        title: "Breaking Bad",
+        poster_url: "https://placehold.co/400x600/111/333?text=Breaking+Bad",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Breaking+Bad",
+        overview: "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student.",
+        rich_metadata: {
+            title: "Breaking Bad",
+            type: "series",
+            year: "2008",
+            match_percentage: 98,
+            rating: 9.5,
+            runtime: "Series",
+            director: "Vince Gilligan",
+            genres: ["Drama", "Crime", "Thriller"],
+            tags: ["Drama", "Crime", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student.",
+            why_recommended: "Recommended as one of the highest-rated television dramas of all time.",
+            themes: ["Morality", "Family", "Greed", "Crime"],
+            moods: ["Intense", "Dark", "Captivating"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 85 }
+            ]
+        }
+    },
+    {
+        item_id: 21,
+        title: "Game of Thrones",
+        poster_url: "https://placehold.co/400x600/111/333?text=Game+of+Thrones",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Game+of+Thrones",
+        overview: "Nine noble families fight for control over the lands of Westeros, while an ancient enemy returns after being dormant for thousands of years.",
+        rich_metadata: {
+            title: "Game of Thrones",
+            type: "series",
+            year: "2011",
+            match_percentage: 97,
+            rating: 9.2,
+            runtime: "Series",
+            director: "David Benioff",
+            genres: ["Drama", "Fantasy", "Action"],
+            tags: ["Drama", "Fantasy", "Action"],
+            audience_type: "Adult",
+            story_summary: "Nine noble families fight for control over the lands of Westeros, while an ancient enemy returns after being dormant for thousands of years.",
+            why_recommended: "Recommended for its epic fantasy world-building and political intrigue.",
+            themes: ["Power", "Betrayal", "Survival", "Destiny"],
+            moods: ["Epic", "Intense", "Dark"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Exceptional",
+            action_level: "High",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 13, title: "Dune", poster_url: "https://placehold.co/400x600/111/333?text=Dune", score: 90 }
+            ]
+        }
+    },
+    {
+        item_id: 22,
+        title: "Succession",
+        poster_url: "https://placehold.co/400x600/111/333?text=Succession",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Succession",
+        overview: "The Roy family is known for controlling the biggest media and entertainment company in the world. However, their world changes when their father steps down.",
+        rich_metadata: {
+            title: "Succession",
+            type: "series",
+            year: "2018",
+            match_percentage: 94,
+            rating: 8.9,
+            runtime: "Series",
+            director: "Jesse Armstrong",
+            genres: ["Drama", "Comedy"],
+            tags: ["Drama", "Comedy"],
+            audience_type: "Adult",
+            story_summary: "The Roy family is known for controlling the biggest media and entertainment company in the world. However, their world changes when their father steps down.",
+            why_recommended: "Recommended for its sharp satire, incredible writing, and intense family drama.",
+            themes: ["Power", "Family", "Corporate Greed"],
+            moods: ["Cynical", "Intense", "Witty"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Low",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 14, title: "The Grand Budapest Hotel", poster_url: "https://placehold.co/400x600/111/333?text=Budapest+Hotel", score: 80 }
+            ]
+        }
+    },
+    {
+        item_id: 23,
+        title: "The Crown",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Crown",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Crown",
+        overview: "Follows the political rivalries and romance of Queen Elizabeth II's reign and the events that shaped the second half of the twentieth century.",
+        rich_metadata: {
+            title: "The Crown",
+            type: "series",
+            year: "2016",
+            match_percentage: 93,
+            rating: 8.6,
+            runtime: "Series",
+            director: "Peter Morgan",
+            genres: ["Drama", "History"],
+            tags: ["Drama", "History"],
+            audience_type: "General",
+            story_summary: "Follows the political rivalries and romance of Queen Elizabeth II's reign and the events that shaped the second half of the twentieth century.",
+            why_recommended: "Recommended for its historical accuracy, gorgeous cinematography, and dramatic depth.",
+            themes: ["Duty", "Family", "Tradition", "Politics"],
+            moods: ["Atmospheric", "Emotional", "Serious"],
+            pacing: "Steady",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Low",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 14, title: "The Grand Budapest Hotel", poster_url: "https://placehold.co/400x600/111/333?text=Budapest+Hotel", score: 75 }
+            ]
+        }
+    },
+    {
+        item_id: 24,
+        title: "Friends",
+        poster_url: "https://placehold.co/400x600/111/333?text=Friends",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Friends",
+        overview: "Follows the personal and professional lives of six twenty to thirty-something-year-old friends living in Manhattan.",
+        rich_metadata: {
+            title: "Friends",
+            type: "series",
+            year: "1994",
+            match_percentage: 95,
+            rating: 8.9,
+            runtime: "Series",
+            director: "David Crane",
+            genres: ["Comedy", "Romance"],
+            tags: ["Comedy", "Romance"],
+            audience_type: "Family/General",
+            story_summary: "Follows the personal and professional lives of six twenty to thirty-something-year-old friends living in Manhattan.",
+            why_recommended: "Recommended for its nostalgic, lighthearted humor and iconic cast dynamics.",
+            themes: ["Friendship", "Love", "Careers"],
+            moods: ["Lighthearted", "Uplifting", "Funny"],
+            pacing: "Fast-Paced",
+            complexity: "Low",
+            world_building: "Standard",
+            action_level: "Low",
+            violence_level: "None",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 78 }
+            ]
+        }
+    },
+    {
+        item_id: 25,
+        title: "The Office",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Office",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Office",
+        overview: "A mockumentary on a group of typical office workers, where the workday consists of ego clashes, inappropriate behavior, and tedium.",
+        rich_metadata: {
+            title: "The Office",
+            type: "series",
+            year: "2005",
+            match_percentage: 96,
+            rating: 9.0,
+            runtime: "Series",
+            director: "Greg Daniels",
+            genres: ["Comedy"],
+            tags: ["Comedy"],
+            audience_type: "Family/General",
+            story_summary: "A mockumentary on a group of typical office workers, where the workday consists of ego clashes, inappropriate behavior, and tedium.",
+            why_recommended: "Recommended for its hilarious cringe comedy and beloved character relationships.",
+            themes: ["Workplace", "Friendship", "Humor"],
+            moods: ["Lighthearted", "Witty", "Funny"],
+            pacing: "Fast-Paced",
+            complexity: "Low",
+            world_building: "Standard",
+            action_level: "Low",
+            violence_level: "None",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 76 }
+            ]
+        }
+    },
+    {
+        item_id: 26,
+        title: "Sherlock",
+        poster_url: "https://placehold.co/400x600/111/333?text=Sherlock",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Sherlock",
+        overview: "A modern update finds the famous sleuth and his doctor partner solving crime in 21st century London.",
+        rich_metadata: {
+            title: "Sherlock",
+            type: "series",
+            year: "2010",
+            match_percentage: 95,
+            rating: 9.1,
+            runtime: "Series",
+            director: "Steven Moffat",
+            genres: ["Drama", "Mystery", "Crime"],
+            tags: ["Drama", "Mystery", "Crime"],
+            audience_type: "General",
+            story_summary: "A modern update finds the famous sleuth and his doctor partner solving crime in 21st century London.",
+            why_recommended: "Recommended for its brilliant modern deduction and thrilling crime mysteries.",
+            themes: ["Intellect", "Friendship", "Justice"],
+            moods: ["Captivating", "Suspenseful", "Witty"],
+            pacing: "Fast-Paced",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "Moderate",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 88 }
+            ]
+        }
+    },
+    {
+        item_id: 27,
+        title: "Black Mirror",
+        poster_url: "https://placehold.co/400x600/111/333?text=Black+Mirror",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Black+Mirror",
+        overview: "An anthology series exploring a twisted, high-tech multiverse where humanity's greatest innovations and darkest instincts collide.",
+        rich_metadata: {
+            title: "Black Mirror",
+            type: "series",
+            year: "2011",
+            match_percentage: 94,
+            rating: 8.7,
+            runtime: "Series",
+            director: "Charlie Brooker",
+            genres: ["Drama", "Science Fiction", "Thriller"],
+            tags: ["Drama", "Science Fiction", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "An anthology series exploring a twisted, high-tech multiverse where humanity's greatest innovations and darkest instincts collide.",
+            why_recommended: "Recommended for its thought-provoking dark sci-fi themes and technological warnings.",
+            themes: ["Technology", "Society", "Human Nature"],
+            moods: ["Dark", "Thought-Provoking", "Atmospheric"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Moderate",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 10, title: "Interstellar", poster_url: "https://placehold.co/400x600/111/333?text=Interstellar", score: 85 }
+            ]
+        }
+    },
+    {
+        item_id: 28,
+        title: "Better Call Saul",
+        poster_url: "https://placehold.co/400x600/111/333?text=Better+Call+Saul",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Better+Call+Saul",
+        overview: "The trials and tribulations of criminal lawyer Jimmy McGill in the years leading up to his fateful run-in with Walter White and Jesse Pinkman.",
+        rich_metadata: {
+            title: "Better Call Saul",
+            type: "series",
+            year: "2015",
+            match_percentage: 96,
+            rating: 8.9,
+            runtime: "Series",
+            director: "Vince Gilligan",
+            genres: ["Drama", "Crime"],
+            tags: ["Drama", "Crime"],
+            audience_type: "Adult",
+            story_summary: "The trials and tribulations of criminal lawyer Jimmy McGill in the years leading up to his fateful run-in with Walter White and Jesse Pinkman.",
+            why_recommended: "Recommended for its masterful character study, dark humor, and high-tension legal drama.",
+            themes: ["Morality", "Identity", "Family", "Crime"],
+            moods: ["Intense", "Dark", "Captivating"],
+            pacing: "Slow Burn",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "Moderate",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 20, title: "Breaking Bad", poster_url: "https://placehold.co/400x600/111/333?text=Breaking+Bad", score: 98 }
+            ]
+        }
+    },
+    {
+        item_id: 29,
+        title: "The Last of Us",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Last+of+Us",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Last+of+Us",
+        overview: "Twenty years after modern civilization has been destroyed, Joel, a hardened survivor, is hired to smuggle Ellie, a 14-year-old girl, out of an oppressive quarantine zone.",
+        rich_metadata: {
+            title: "The Last of Us",
+            type: "series",
+            year: "2023",
+            match_percentage: 95,
+            rating: 8.8,
+            runtime: "Series",
+            director: "Craig Mazin",
+            genres: ["Drama", "Action", "Adventure", "Science Fiction"],
+            tags: ["Drama", "Action", "Adventure", "Science Fiction"],
+            audience_type: "Adult",
+            story_summary: "Twenty years after modern civilization has been destroyed, Joel, a hardened survivor, is hired to smuggle Ellie, a 14-year-old girl, out of an oppressive quarantine zone.",
+            why_recommended: "Recommended for its emotional depth, post-apocalyptic survival theme, and gripping narrative.",
+            themes: ["Survival", "Fatherhood", "Loss", "Hope"],
+            moods: ["Emotional", "Intense", "Atmospheric"],
+            pacing: "Steady",
+            complexity: "Medium",
+            world_building: "Exceptional",
+            action_level: "High",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 11, title: "Stranger Things", poster_url: "https://placehold.co/400x600/111/333?text=Stranger+Things", score: 87 }
+            ]
+        }
+    },
+    {
+        item_id: 30,
+        title: "The Mandalorian",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Mandalorian",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Mandalorian",
+        overview: "The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic.",
+        rich_metadata: {
+            title: "The Mandalorian",
+            type: "series",
+            year: "2019",
+            match_percentage: 92,
+            rating: 8.7,
+            runtime: "Series",
+            director: "Jon Favreau",
+            genres: ["Action", "Adventure", "Science Fiction"],
+            tags: ["Action", "Adventure", "Science Fiction"],
+            audience_type: "Family Friendly",
+            story_summary: "The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic.",
+            why_recommended: "Recommended for its exciting space adventure, rich world-building, and strong protector themes.",
+            themes: ["Honor", "Duty", "Fatherhood", "Journey"],
+            moods: ["Exciting", "Adventurous", "Uplifting"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "High",
+            violence_level: "Moderate",
+            language_severity: "None",
+            adult: false,
+            similar_movies: [
+                { item_id: 1, title: "Spider-Man: No Way Home", poster_url: "https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", score: 85 }
+            ]
+        }
+    },
+    {
+        item_id: 31,
+        title: "Rick and Morty",
+        poster_url: "https://placehold.co/400x600/111/333?text=Rick+and+Morty",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Rick+and+Morty",
+        overview: "An animated series that follows the exploits of a super scientist and his inherently timid grandson.",
+        rich_metadata: {
+            title: "Rick and Morty",
+            type: "series",
+            year: "2013",
+            match_percentage: 97,
+            rating: 9.1,
+            runtime: "Series",
+            director: "Dan Harmon",
+            genres: ["Animation", "Comedy", "Science Fiction"],
+            tags: ["Animation", "Comedy", "Science Fiction"],
+            audience_type: "Adult",
+            story_summary: "An animated series that follows the exploits of a super scientist and his inherently timid grandson.",
+            why_recommended: "Recommended for its brilliant sci-fi concepts, dark absurdist humor, and mind-bending plots.",
+            themes: ["Existentialism", "Family", "Multiverse", "Scientific Ethics"],
+            moods: ["Witty", "Absurd", "Mind-Bending"],
+            pacing: "Fast-Paced",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "High",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 10, title: "Interstellar", poster_url: "https://placehold.co/400x600/111/333?text=Interstellar", score: 80 }
+            ]
+        }
+    },
+    {
+        item_id: 32,
+        title: "The Boys",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Boys",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Boys",
+        overview: "A fun and irreverent take on what happens when superheroes—who are as popular as celebrities—abuse their superpowers.",
+        rich_metadata: {
+            title: "The Boys",
+            type: "series",
+            year: "2019",
+            match_percentage: 93,
+            rating: 8.7,
+            runtime: "Series",
+            director: "Eric Kripke",
+            genres: ["Action", "Comedy", "Science Fiction"],
+            tags: ["Action", "Comedy", "Science Fiction"],
+            audience_type: "Adult",
+            story_summary: "A fun and irreverent take on what happens when superheroes—who are as popular as celebrities—abuse their superpowers.",
+            why_recommended: "Recommended for its dark superhero satire, high stakes, and intense action scenes.",
+            themes: ["Corruption", "Power", "Celebrity", "Revenge"],
+            moods: ["Gritty", "Satirical", "Violent", "Intense"],
+            pacing: "Fast-Paced",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "High",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 85 }
+            ]
+        }
+    },
+    {
+        item_id: 33,
+        title: "The Sopranos",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Sopranos",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Sopranos",
+        overview: "New Jersey mob boss Tony Soprano deals with personal and professional issues in his home and business life that affect his mental state.",
+        rich_metadata: {
+            title: "The Sopranos",
+            type: "series",
+            year: "1999",
+            match_percentage: 98,
+            rating: 9.2,
+            runtime: "Series",
+            director: "David Chase",
+            genres: ["Drama", "Crime"],
+            tags: ["Drama", "Crime"],
+            audience_type: "Adult",
+            story_summary: "New Jersey mob boss Tony Soprano deals with personal and professional issues in his home and business life that affect his mental state.",
+            why_recommended: "Recommended as a groundbreaking crime drama exploring morality, family conflicts, and psychological struggles.",
+            themes: ["Family", "Crime", "Guilt", "Identity"],
+            moods: ["Intense", "Dark", "Captivating"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 84 }
+            ]
+        }
+    },
+    {
+        item_id: 34,
+        title: "The Wire",
+        poster_url: "https://placehold.co/400x600/111/333?text=The+Wire",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=The+Wire",
+        overview: "This series looks at the Baltimore drug scene through the eyes of both law enforcement and drug dealers.",
+        rich_metadata: {
+            title: "The Wire",
+            type: "series",
+            year: "2002",
+            match_percentage: 97,
+            rating: 9.3,
+            runtime: "Series",
+            director: "David Simon",
+            genres: ["Drama", "Crime", "Thriller"],
+            tags: ["Drama", "Crime", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "This series looks at the Baltimore drug scene through the eyes of both law enforcement and drug dealers.",
+            why_recommended: "Recommended for its unmatched realism, complex characters, and profound examination of urban institutions.",
+            themes: ["Corruption", "Bureaucracy", "Class", "Justice"],
+            moods: ["Gritty", "Dark", "Realistic"],
+            pacing: "Slow Burn",
+            complexity: "High",
+            world_building: "Exceptional",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 86 }
+            ]
+        }
+    },
+    {
+        item_id: 35,
+        title: "Ted Lasso",
+        poster_url: "https://placehold.co/400x600/111/333?text=Ted+Lasso",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Ted+Lasso",
+        overview: "American college football coach Ted Lasso heads to London to manage AFC Richmond, a struggling English Premier League football team.",
+        rich_metadata: {
+            title: "Ted Lasso",
+            type: "series",
+            year: "2020",
+            match_percentage: 94,
+            rating: 8.8,
+            runtime: "Series",
+            director: "Bill Lawrence",
+            genres: ["Comedy", "Drama"],
+            tags: ["Comedy", "Drama"],
+            audience_type: "General",
+            story_summary: "American college football coach Ted Lasso heads to London to manage AFC Richmond, a struggling English Premier League football team.",
+            why_recommended: "Recommended for its infectious optimism, heartwarming characters, and uplifting humor.",
+            themes: ["Leadership", "Optimism", "Friendship", "Empathy"],
+            moods: ["Uplifting", "Joyful", "Emotional"],
+            pacing: "Steady",
+            complexity: "Medium",
+            world_building: "Rich",
+            action_level: "Low",
+            violence_level: "None",
+            language_severity: "Mild",
+            adult: false,
+            similar_movies: [
+                { item_id: 4, title: "Encanto", poster_url: "https://image.tmdb.org/t/p/original/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg", score: 85 }
+            ]
+        }
+    },
+    {
+        item_id: 36,
+        title: "Fargo",
+        poster_url: "https://placehold.co/400x600/111/333?text=Fargo",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Fargo",
+        overview: "Various chronicles of deception, intrigue, and murder in and around frozen Minnesota. Yet all of these tales mysteriously lead back to one place.",
+        rich_metadata: {
+            title: "Fargo",
+            type: "series",
+            year: "2014",
+            match_percentage: 95,
+            rating: 8.9,
+            runtime: "Series",
+            director: "Noah Hawley",
+            genres: ["Crime", "Drama", "Thriller"],
+            tags: ["Crime", "Drama", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "Various chronicles of deception, intrigue, and murder in and around frozen Minnesota. Yet all of these tales mysteriously lead back to one place.",
+            why_recommended: "Recommended for its dark absurdity, quirky characters, and high-tension crime plots.",
+            themes: ["Morality", "Chance", "Greed", "Deception"],
+            moods: ["Dark", "Intense", "Absurd"],
+            pacing: "Steady",
+            complexity: "High",
+            world_building: "Rich",
+            action_level: "Medium",
+            violence_level: "High",
+            language_severity: "Strong",
+            adult: false,
+            similar_movies: [
+                { item_id: 2, title: "The Batman", poster_url: "https://image.tmdb.org/t/p/original/74xTEgt7R36Fpooo50r9T25onhq.jpg", score: 83 }
+            ]
+        }
+    },
+    {
+        item_id: 37,
+        title: "Dark",
+        poster_url: "https://placehold.co/400x600/111/333?text=Dark",
+        backdrop_url: "https://placehold.co/800x450/111/333?text=Dark",
+        overview: "A family saga with a supernatural twist, set in a German town, where the disappearance of two young children exposes the relationships among four families.",
+        rich_metadata: {
+            title: "Dark",
+            type: "series",
+            year: "2017",
+            match_percentage: 96,
+            rating: 8.7,
+            runtime: "Series",
+            director: "Baran bo Odar",
+            genres: ["Drama", "Mystery", "Science Fiction", "Thriller"],
+            tags: ["Drama", "Mystery", "Science Fiction", "Thriller"],
+            audience_type: "Adult",
+            story_summary: "A family saga with a supernatural twist, set in a German town, where the disappearance of two young children exposes the relationships among four families.",
+            why_recommended: "Recommended for its complex time-travel mythology, deep existential themes, and dark atmospheric suspense.",
+            themes: ["Time Travel", "Fate", "Determinism", "Family Secrets"],
+            moods: ["Atmospheric", "Dark", "Mind-Bending"],
+            pacing: "Steady",
+            complexity: "Exceptional",
+            world_building: "Exceptional",
+            action_level: "Low",
+            violence_level: "Moderate",
+            language_severity: "Moderate",
+            adult: false,
+            similar_movies: [
+                { item_id: 10, title: "Interstellar", poster_url: "https://placehold.co/400x600/111/333?text=Interstellar", score: 92 }
+            ]
+        }
     }
 ];
 
@@ -524,7 +1120,17 @@ window.getMovieType = function(movie) {
         titleLower.includes('friends') ||
         titleLower.includes('the office') ||
         titleLower.includes('sherlock') ||
-        titleLower.includes('black mirror')) {
+        titleLower.includes('black mirror') ||
+        titleLower.includes('better call saul') ||
+        titleLower.includes('last of us') ||
+        titleLower.includes('mandalorian') ||
+        titleLower.includes('rick and morty') ||
+        titleLower.includes('the boys') ||
+        titleLower.includes('sopranos') ||
+        titleLower.includes('the wire') ||
+        titleLower.includes('ted lasso') ||
+        titleLower.includes('fargo') ||
+        titleLower.includes('dark')) {
         return 'series';
     }
     
@@ -538,7 +1144,8 @@ window.getMovieType = function(movie) {
     const m = movie.rich_metadata || {};
     const genres = (m.genres || m.tags || movie.genres || []).map(g => g.toLowerCase());
     const seriesKeywords = ['tv series', 'tv show', 'series', 'mini-series', 'docuseries', 'web series', 'anime series', 'show', 'shows', 'reality', 'limited-series'];
-    if (genres.some(g => seriesKeywords.includes(g) || g.includes('series') || g.includes('show') || g.includes('tv') || g.includes('episode'))) {
+    // Avoid classifying "TV Movie" as a series by ensuring "tv" matches do not include "tv movie"
+    if (genres.some(g => seriesKeywords.includes(g) || g.includes('series') || g.includes('show') || (g.includes('tv') && !g.includes('tv movie')) || g.includes('episode'))) {
         return 'series';
     }
     
@@ -549,6 +1156,7 @@ window.getMovieType = function(movie) {
 window.isSeries = function(movie) {
     return window.getMovieType(movie) === 'series';
 };
+const isSeries = window.isSeries;
 
 window.applyTheme = function(themeName) {
     const root = document.documentElement;
@@ -703,7 +1311,51 @@ document.addEventListener('DOMContentLoaded', () => {
             touchEndY = 0;
         }, { passive: true });
     }
+    // Bind format selectors dynamically to bypass inline CSP blocks
+    const allTab = document.getElementById('format-tab-all');
+    const movieTab = document.getElementById('format-tab-movie');
+    const seriesTab = document.getElementById('format-tab-series');
+    if (allTab) {
+        allTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.setDiscoveryFormat('all');
+        });
+    }
+    if (movieTab) {
+        movieTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.setDiscoveryFormat('movie');
+        });
+    }
+    if (seriesTab) {
+        seriesTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.setDiscoveryFormat('series');
+        });
+    }
     
+    // Also use event delegation for any dynamically created buttons with class 'format-tab'
+    document.addEventListener('click', (e) => {
+        const targetTab = e.target.closest('.format-tab');
+        if (targetTab) {
+            e.preventDefault();
+            const id = targetTab.id;
+            if (id === 'format-tab-all') {
+                window.setDiscoveryFormat('all');
+            } else if (id === 'format-tab-movie') {
+                window.setDiscoveryFormat('movie');
+            } else if (id === 'format-tab-series') {
+                window.setDiscoveryFormat('series');
+            } else {
+                const onclickStr = targetTab.getAttribute('onclick') || '';
+                const match = onclickStr.match(/setDiscoveryFormat\(['"](all|movie|series)['"]\)/);
+                if (match && match[1]) {
+                    window.setDiscoveryFormat(match[1]);
+                }
+            }
+        }
+    });
+
     navigateTo('home');
 });
 
@@ -1655,7 +2307,10 @@ async function fetchAndRender(query, rowTitle, isHero = false) {
     }
 
     // Second: Filter out items already shown on the page to prevent duplicates
-    let dedupedMovies = filteredMovies.filter(m => !window.shownItems.includes(m.item_id));
+    // Relax deduplication for TV series since the TV series pool is very small (reusing is required)
+    let dedupedMovies = filteredMovies.filter(m => {
+        return window.currentFormat === 'series' ? true : !window.shownItems.includes(m.item_id);
+    });
 
     // If format filtering & deduplication leaves us empty, fill with format-aligned fallbacks
     if (dedupedMovies.length === 0) {
@@ -1667,15 +2322,15 @@ async function fetchAndRender(query, rowTitle, isHero = false) {
             const matchesFormat = window.currentFormat === 'all' || 
                                   (window.currentFormat === 'movie' && !window.isSeries(m)) || 
                                   (window.currentFormat === 'series' && window.isSeries(m));
-            return matchesQuery && matchesFormat && !window.shownItems.includes(m.item_id);
+            return matchesQuery && matchesFormat && (window.currentFormat === 'series' ? true : !window.shownItems.includes(m.item_id));
         });
         
         if (fallbackList.length === 0) {
             fallbackList = FALLBACK_MOVIES.filter(m => {
-                return (window.currentFormat === 'all' || 
-                       (window.currentFormat === 'movie' && !window.isSeries(m)) || 
-                       (window.currentFormat === 'series' && window.isSeries(m))) &&
-                       !window.shownItems.includes(m.item_id);
+                const matchesFormat = window.currentFormat === 'all' || 
+                                      (window.currentFormat === 'movie' && !window.isSeries(m)) || 
+                                      (window.currentFormat === 'series' && window.isSeries(m));
+                return matchesFormat && (window.currentFormat === 'series' ? true : !window.shownItems.includes(m.item_id));
             }).sort(() => 0.5 - Math.random()).slice(0, 5);
         }
         dedupedMovies = fallbackList;
@@ -2506,11 +3161,35 @@ window.executeSearchPageQuery = async function(query) {
     }
     
     // Filter search results by active format mode
-    let filteredMovies = movies || [];
-    if (window.currentFormat === 'movie') {
-        filteredMovies = movies.filter(m => !window.isSeries(m));
-    } else if (window.currentFormat === 'series') {
-        filteredMovies = movies.filter(m => window.isSeries(m));
+    let filteredMovies = (movies || []).filter(m => {
+        return window.currentFormat === 'all' ||
+               (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+               (window.currentFormat === 'series' && window.isSeries(m));
+    });
+    
+    // If format filtering leaves us empty, fill with format-aligned fallbacks matching the query
+    if (filteredMovies.length === 0) {
+        const q = query.toLowerCase();
+        filteredMovies = FALLBACK_MOVIES.filter(m => {
+            const matchesFormat = window.currentFormat === 'all' ||
+                                  (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+                                  (window.currentFormat === 'series' && window.isSeries(m));
+            const matchesQuery = m.title.toLowerCase().includes(q) ||
+                                 m.overview.toLowerCase().includes(q) ||
+                                 (m.rich_metadata.genres || []).some(g => g.toLowerCase().includes(q)) ||
+                                 (m.rich_metadata.themes || []).some(t => t.toLowerCase().includes(q)) ||
+                                 (m.rich_metadata.director || '').toLowerCase().includes(q);
+            return matchesFormat && matchesQuery;
+        });
+        
+        // If still empty, return any format-aligned fallbacks
+        if (filteredMovies.length === 0) {
+            filteredMovies = FALLBACK_MOVIES.filter(m => {
+                return window.currentFormat === 'all' ||
+                       (window.currentFormat === 'movie' && !window.isSeries(m)) ||
+                       (window.currentFormat === 'series' && window.isSeries(m));
+            }).slice(0, 4);
+        }
     }
     movies = filteredMovies;
     
