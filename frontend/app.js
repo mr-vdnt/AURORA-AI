@@ -7,7 +7,6 @@
 const sidebar       = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebarNav    = document.getElementById('sidebar-nav');
-const profileTrig   = document.getElementById('profile-trigger');
 const userIdInput   = document.getElementById('user-id-input');
 const topbar        = document.getElementById('topbar');
 
@@ -1256,14 +1255,6 @@ async function authFetch(url, options = {}) {
 //  INIT
 // ══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-    const logoutBtn = document.getElementById('logout-btn');
-    const adminLink = document.getElementById('admin-link');
-    const userDisplay = document.getElementById('current-user-display');
-
-    if (userDisplay) userDisplay.textContent = 'User: Guest';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (adminLink) adminLink.style.display = 'none';
-    
     const savedTheme = localStorage.getItem('aurora_theme') || 'neon';
     applyTheme(savedTheme);
     
@@ -1481,16 +1472,7 @@ window.addEventListener('scroll', () => {
     topbar.classList.toggle('scrolled', window.scrollY > 40);
 }, { passive: true });
 
-// ══════════════════════════════════════════════════════════════════════
-//  PROFILE DROPDOWN
-// ══════════════════════════════════════════════════════════════════════
-profileTrig.addEventListener('click', (e) => {
-    if (e.target.closest('.profile-dropdown') && e.target.tagName !== 'A') return;
-    profileTrig.classList.toggle('open');
-});
-document.addEventListener('click', (e) => {
-    if (!profileTrig.contains(e.target)) profileTrig.classList.remove('open');
-});
+
 
 // ══════════════════════════════════════════════════════════════════════
 //  SEARCH OVERLAY
@@ -2735,7 +2717,7 @@ function createMovieCardHTML(movie) {
     const saved = isInMyList(movie.item_id);
 
     return `
-    <div class="card-wrap" style="cursor: pointer;">
+    <div class="card-wrap" style="cursor: pointer;" onclick="openModal(${movie.item_id})">
         <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
             <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
             <div class="card-3d__badge">${score}%</div>
@@ -3719,31 +3701,61 @@ function renderModalData(m, id) {
     }
 
     const simContainer = document.getElementById('modal-similar');
-    const recs = getSimilarRecommendations(seedMovie);
-    if (recs && recs.length > 0) {
-        simContainer.innerHTML = recs.map(r => {
-            const sm = r.movie;
-            const poster = sm.poster_url || placeholder(sm.title);
-            const meta = sm.rich_metadata || {};
-            const rating = meta.rating || '7.5';
-            const year = meta.year || '2022';
-            const genresList = (meta.genres || meta.tags || ['Drama']).slice(0, 2).join(' • ');
+    if (simContainer) {
+        // Initialize state for infinite recommendation traversal
+        window.modalRenderedIds = new Set([parseInt(id)]);
+        window.modalPendingRecs = [];
+        window.modalExpandedSeedIds = new Set([parseInt(id)]);
 
-            return `
-                <div class="sim-card" onclick="openModal(${sm.item_id})">
-                    <img src="${poster}" alt="${sm.title}" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
-                    <div class="sim-title">${sm.title}</div>
-                    <div class="sim-meta-row">
-                        <span class="sim-match">${r.score}% Match</span>
-                        <span class="sim-rating-imdb">★ ${rating}</span>
+        const recs = getSimilarRecommendations(seedMovie);
+        if (recs && recs.length > 0) {
+            window.modalPendingRecs = [...recs];
+        }
+
+        // Take the first 10 items
+        const initialBatch = window.modalPendingRecs.splice(0, 10);
+        if (initialBatch.length > 0) {
+            simContainer.innerHTML = initialBatch.map(r => {
+                const sm = r.movie;
+                window.modalRenderedIds.add(parseInt(sm.item_id));
+                const poster = sm.poster_url || placeholder(sm.title);
+                const meta = sm.rich_metadata || {};
+                const rating = meta.rating || '7.5';
+                const year = meta.year || '2022';
+                const genresList = (meta.genres || meta.tags || ['Drama']).slice(0, 2).join(' • ');
+                const typeLabel = isSeries(sm) ? 'TV Series' : 'Movie';
+
+                return `
+                    <div class="sim-card" onclick="openModal(${sm.item_id})">
+                        <img src="${poster}" alt="${sm.title}" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
+                        <div class="sim-title">${sm.title}</div>
+                        <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
+                            <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
+                            <span class="sim-type" style="color:var(--aurora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
+                            <span class="sim-rating-imdb" style="color:#fbbf24;">★ ${rating}</span>
+                        </div>
+                        <div class="sim-genres-text" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${genresList} (${year})</div>
+                        <div class="sim-reason" style="font-size: 0.68rem; color: var(--text-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; margin-top:2px;" title="${r.reasoning}">${r.reasoning}</div>
                     </div>
-                    <div class="sim-genres-text">${genresList} (${year})</div>
-                    <div class="sim-reason" style="font-size: 0.68rem; color: var(--text-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px;" title="${r.reasoning}">${r.reasoning}</div>
-                </div>
-            `;
-        }).join('');
-    } else {
-        simContainer.innerHTML = '<p>No similar titles found.</p>';
+                `;
+            }).join('');
+
+            // Attach infinite scroll loader
+            simContainer.addEventListener('scroll', () => {
+                if (simContainer.scrollWidth - simContainer.scrollLeft - simContainer.clientWidth < 300) {
+                    if (typeof window.loadMoreModalSimilar === 'function') {
+                        window.loadMoreModalSimilar();
+                    }
+                }
+            }, { passive: true });
+
+            // Attach horizontal scrolling / dragging
+            if (typeof window.setupHorizontalScroll === 'function') {
+                window.setupHorizontalScroll(simContainer);
+            }
+        } else {
+            simContainer.innerHTML = '<p>No similar titles found.</p>';
+        }
     }
 
     const addBtn = document.getElementById('modal-add-list');
@@ -3775,6 +3787,12 @@ function renderModalData(m, id) {
     if (cinematicModal) {
         setTimeout(() => {
             cinematicModal.classList.remove('transitioning');
+            const savedScroll = window.modalHistoryScrollPositions[window.modalHistoryIndex];
+            if (savedScroll !== undefined) {
+                cinematicModal.scrollTop = savedScroll;
+            } else {
+                cinematicModal.scrollTop = 0;
+            }
         }, 50);
     }
 }
@@ -3822,8 +3840,16 @@ window.updateBreadcrumbs = function() {
     breadcrumbsContainer.innerHTML = trail;
 };
 
+window.modalHistoryScrollPositions = {};
+
 window.navigateModalHistory = function(index) {
     if (index >= 0 && index < window.modalHistory.length) {
+        // Save current scroll position before leaving
+        const cinematicModal = document.querySelector('.cinematic-modal');
+        if (cinematicModal && window.modalHistoryIndex >= 0) {
+            window.modalHistoryScrollPositions[window.modalHistoryIndex] = cinematicModal.scrollTop;
+        }
+
         window.modalHistoryIndex = index;
         const id = window.modalHistory[index];
         openModalInternal(id, false);
@@ -3843,11 +3869,18 @@ window.modalHistoryForward = function() {
 };
 
 async function openModalInternal(id, appendToHistory = true) {
+    // Save current scroll position before leaving
+    const cinematicModal = document.querySelector('.cinematic-modal');
+    if (cinematicModal && window.modalHistoryIndex >= 0) {
+        window.modalHistoryScrollPositions[window.modalHistoryIndex] = cinematicModal.scrollTop;
+    }
+
     if (appendToHistory) {
         const isModalAlreadyOpen = modalOverlay.classList.contains('active');
         if (!isModalAlreadyOpen) {
             window.modalHistory = [id];
             window.modalHistoryIndex = 0;
+            window.modalHistoryScrollPositions = {}; // reset scroll positions on new open
         } else {
             if (window.modalHistory[window.modalHistoryIndex] !== id) {
                 // Truncate forward history
@@ -3866,7 +3899,6 @@ async function openModalInternal(id, appendToHistory = true) {
     window.updateBreadcrumbs();
 
     // Trigger transition fade-out
-    const cinematicModal = document.querySelector('.cinematic-modal');
     if (cinematicModal) {
         cinematicModal.classList.add('transitioning');
         cinematicModal.scrollTop = 0;
@@ -3935,6 +3967,7 @@ async function openModalInternal(id, appendToHistory = true) {
 }
 
 async function openModal(id) {
+    if (window.modalIsDragging) return;
     authFetch('/events/ingest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4310,4 +4343,217 @@ window.submitFeedback = function() {
 window.performLogOut = function() {
     closeDrawerModalDirect();
     alert('You have logged out of Aurora AI.');
+};
+
+// ══════════════════════════════════════════════════════════════════════
+//  EDGE-AWARE DYNAMIC CARD EXPANSION
+// ══════════════════════════════════════════════════════════════════════
+document.addEventListener('mouseenter', (e) => {
+    const cardWrap = e.target.closest('.card-wrap');
+    if (!cardWrap) return;
+    
+    const cardExpand = cardWrap.querySelector('.card-expand');
+    if (!cardExpand) return;
+    
+    cardExpand.classList.remove('expand-left-edge', 'expand-right-edge', 'expand-center');
+    
+    const cardRect = cardWrap.getBoundingClientRect();
+    const expandWidth = 340; // width of expanded card in CSS
+    const overflowLeft = cardRect.left - (expandWidth - cardRect.width) / 2;
+    const overflowRight = cardRect.right + (expandWidth - cardRect.width) / 2;
+    
+    if (overflowLeft < 15) {
+        cardExpand.classList.add('expand-left-edge');
+    } else if (overflowRight > window.innerWidth - 15) {
+        cardExpand.classList.add('expand-right-edge');
+    } else {
+        cardExpand.classList.add('expand-center');
+    }
+}, true);
+
+document.addEventListener('mouseleave', (e) => {
+    const cardWrap = e.target.closest('.card-wrap');
+    if (!cardWrap) return;
+    
+    const cardExpand = cardWrap.querySelector('.card-expand');
+    if (cardExpand) {
+        cardExpand.classList.remove('expand-left-edge', 'expand-right-edge', 'expand-center');
+    }
+}, true);
+
+// ══════════════════════════════════════════════════════════════════════
+//  DRAG-TO-SCROLL, WHEEL SCROLL, & MOMENTUM PHYSICS
+// ══════════════════════════════════════════════════════════════════════
+window.modalIsDragging = false;
+
+window.setupHorizontalScroll = function(el) {
+    if (!el) return;
+    
+    // 1. Mouse wheel horizontal scrolling
+    el.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            el.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+    
+    // 2. Drag-to-scroll with momentum physics
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let velocity = 0;
+    let lastTime = 0;
+    let lastX = 0;
+    let animationFrameId = null;
+    let isMoving = false;
+
+    el.addEventListener('mousedown', (e) => {
+        // Only trigger drag on left-click and if not clicking a link/button directly
+        if (e.button !== 0) return;
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        
+        isDown = true;
+        isMoving = false;
+        el.classList.add('dragging');
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+        lastX = e.pageX;
+        lastTime = Date.now();
+        velocity = 0;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    });
+
+    el.addEventListener('mouseleave', () => {
+        if (!isDown) return;
+        isDown = false;
+        el.classList.remove('dragging');
+        applyMomentum();
+    });
+
+    el.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        el.classList.remove('dragging');
+        if (isMoving) {
+            window.modalIsDragging = true;
+            setTimeout(() => { window.modalIsDragging = false; }, 50);
+        }
+        applyMomentum();
+    });
+
+    el.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - el.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        const diff = Math.abs(x - lastX);
+        if (diff > 4) {
+            isMoving = true;
+        }
+        el.scrollLeft = scrollLeft - walk;
+        
+        // Calculate instantaneous velocity
+        const now = Date.now();
+        const dt = now - lastTime;
+        if (dt > 0) {
+            velocity = (e.pageX - lastX) / dt;
+            lastX = e.pageX;
+            lastTime = now;
+        }
+    });
+
+    function applyMomentum() {
+        if (Math.abs(velocity) < 0.1) return;
+        el.scrollLeft -= velocity * 15;
+        velocity *= 0.92; // friction deceleration factor
+        animationFrameId = requestAnimationFrame(applyMomentum);
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════
+//  INFINITE SIMILAR TITLES Discovery Traversal
+// ══════════════════════════════════════════════════════════════════════
+window.modalLoadingMore = false;
+
+window.loadMoreModalSimilar = function() {
+    if (window.modalLoadingMore) return;
+    window.modalLoadingMore = true;
+    
+    // If we are running low on pending scored recommendations, query similar movies of already rendered movies
+    if (window.modalPendingRecs.length < 5) {
+        const renderedIdsArr = Array.from(window.modalRenderedIds);
+        let newSeedFound = false;
+        
+        for (let rId of renderedIdsArr) {
+            if (!window.modalExpandedSeedIds.has(rId)) {
+                // Find this movie item in global database
+                const nextSeed = globalMovies.find(m => parseInt(m.item_id) === rId) || 
+                                 FALLBACK_MOVIES.find(m => parseInt(m.item_id) === rId);
+                if (nextSeed) {
+                    window.modalExpandedSeedIds.add(rId);
+                    const newRecs = window.getSimilarRecommendations(nextSeed);
+                    // Filter out duplicates (already rendered in this rail)
+                    const filtered = newRecs.filter(r => !window.modalRenderedIds.has(parseInt(r.movie.item_id)));
+                    window.modalPendingRecs.push(...filtered);
+                    newSeedFound = true;
+                    break;
+                }
+            }
+        }
+        
+        // Fallback to random global movies if similarity traversal is completely exhausted
+        if (!newSeedFound && window.modalPendingRecs.length === 0) {
+            const allMovies = [...(globalMovies || []), ...FALLBACK_MOVIES];
+            const fallbackRecs = allMovies
+                .filter(m => !window.modalRenderedIds.has(parseInt(m.item_id)))
+                .slice(0, 10)
+                .map(m => ({
+                    movie: m,
+                    score: 72,
+                    reasoning: "Trending discovery recommendation"
+                }));
+            window.modalPendingRecs.push(...fallbackRecs);
+        }
+    }
+    
+    // Take the next 5 items and append to the rail
+    const nextBatch = window.modalPendingRecs.splice(0, 5);
+    if (nextBatch.length > 0) {
+        const simContainer = document.getElementById('modal-similar');
+        if (simContainer) {
+            nextBatch.forEach(r => {
+                const sm = r.movie;
+                const rId = parseInt(sm.item_id);
+                if (window.modalRenderedIds.has(rId)) return;
+                window.modalRenderedIds.add(rId);
+                
+                const poster = sm.poster_url || placeholder(sm.title);
+                const meta = sm.rich_metadata || {};
+                const rating = meta.rating || '7.5';
+                const year = meta.year || '2022';
+                const genresList = (meta.genres || meta.tags || ['Drama']).slice(0, 2).join(' • ');
+                const typeLabel = isSeries(sm) ? 'TV Series' : 'Movie';
+                
+                const cardHtml = `
+                    <div class="sim-card" onclick="openModal(${sm.item_id})">
+                        <img src="${poster}" alt="${sm.title}" class="sim-poster" loading="lazy" onerror="this.src='${placeholder(sm.title)}'">
+                        <div class="sim-title">${sm.title}</div>
+                        <div class="sim-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:2px;">
+                            <span class="sim-match" style="color:var(--match-green); font-weight:700;">${r.score}% Match</span>
+                            <span class="sim-type" style="color:var(--aurora-cyan); font-weight:600; font-size:0.75rem;">${typeLabel}</span>
+                            <span class="sim-rating-imdb" style="color:#fbbf24;">★ ${rating}</span>
+                        </div>
+                        <div class="sim-genres-text" style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${genresList} (${year})</div>
+                        <div class="sim-reason" style="font-size: 0.68rem; color: var(--text-muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; margin-top:2px;" title="${r.reasoning}">${r.reasoning}</div>
+                    </div>
+                `;
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHtml;
+                simContainer.appendChild(tempDiv.firstElementChild);
+            });
+        }
+    }
+    
+    window.modalLoadingMore = false;
 };

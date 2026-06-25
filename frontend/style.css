@@ -183,63 +183,12 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   backdrop-filter: blur(8px);
 }
 
-/* Bottom Area */
-.sidebar__bottom{
-  padding:12px;border-top:1px solid var(--glass-border);
-  display:flex;flex-direction:column;gap:4px;
-}
-
-/* Profile */
-.sidebar__profile{
-  display:flex;align-items:center;gap:14px;
-  padding:12px 14px;border-radius:var(--r-md);
-  cursor:pointer;position:relative;
-  color:var(--text-muted);font-size:0.9rem;font-weight:500;
-  transition:all var(--t-fast);white-space:nowrap;
-}
-.sidebar__profile:hover{color:var(--text-primary);background:var(--glass-bg-2)}
-.sidebar__profile span{opacity:0;transition:opacity var(--t-base)}
-.sidebar.expanded .sidebar__profile span{opacity:1}
-
 .sidebar__avatar{
   width:28px;height:28px;border-radius:var(--r-sm);
   background:var(--glass-bg-3);border:1px solid var(--glass-border);
   display:flex;align-items:center;justify-content:center;
   color:var(--text-primary);flex-shrink:0;
 }
-
-/* Profile Dropdown */
-.profile-dropdown{
-  position:absolute;bottom:100%;left:0;
-  width:220px;
-  background:rgba(15,15,15,0.85);
-  backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
-  border:1px solid var(--glass-border);
-  border-radius:var(--r-lg);
-  padding:12px;
-  opacity:0;visibility:hidden;transform:translateY(8px);
-  transition:all var(--t-base) var(--ease-out);
-  display:flex;flex-direction:column;gap:4px;
-  margin-bottom:8px;
-}
-.sidebar__profile.open .profile-dropdown{
-  opacity:1;visibility:visible;transform:translateY(0);
-}
-.profile-dropdown__uid{
-  display:flex;align-items:center;gap:8px;padding:8px;
-  font-size:0.85rem;color:var(--text-muted);
-}
-.profile-dropdown__uid input{
-  width:54px;padding:4px 6px;border-radius:var(--r-sm);
-  background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);
-  color:var(--text-primary);font-size:0.85rem;text-align:center;
-}
-.profile-dropdown__sep{height:1px;background:var(--glass-border);margin:4px 0}
-.profile-dropdown__item{
-  padding:10px 12px;border-radius:var(--r-md);font-size:0.9rem;
-  color:var(--text-primary);font-weight:500;transition:background var(--t-fast);
-}
-.profile-dropdown__item:hover{background:var(--glass-bg-3)}
 
 /* ══════════════════════════════════════════════════════════════════════
    TOPBAR
@@ -975,7 +924,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   .modal-body-grid{grid-template-columns:1fr}
   
   /* Touch target enlargement for tablets */
-  .sidebar__link, .profile-dropdown__item { min-height: 48px; }
+  .sidebar__link { min-height: 48px; }
 }
 @media(max-width:768px){
   /* Mobile Topbar & Drawer */
@@ -1002,7 +951,6 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   .sidebar__link { min-height: 48px; font-size: 1.1rem; }
   .sidebar__logo-text { opacity: 1 !important; }
   .sidebar__link span { opacity: 1 !important; }
-  .sidebar__profile span { opacity: 1 !important; }
   
   /* Prevent toggle btn from looking weird on mobile, hide it */
   .sidebar__toggle { display: none; }
@@ -2035,72 +1983,387 @@ a:focus-visible,button:focus-visible,input:focus-visible{
   transform: translateY(-8px) scale(1.15) rotate(1deg) !important;
 }
 
-/* 2. Mobile Header Three-Column Alignment (Left Menu, Center Logo, Right Search) */
-@media (max-width: 768px) {
+/* 2. Responsive Layout System (Desktop, Tablet, Mobile) */
+
+/* ── TABLET BREAKPOINT (768px – 1279px) ──────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1279px) {
+  /* Permanent sidebar is replaced with collapsible drawer */
+  .sidebar, .sidebar-backdrop {
+    display: none !important;
+  }
+  
+  .main {
+    margin-left: 0 !important;
+    padding-top: 80px !important;
+  }
+  
+  .site-footer {
+    margin-left: 0 !important;
+  }
+
+  /* Topbar spans full width and displays menu button, logo, AI button */
   .topbar {
-    display: grid !important;
-    grid-template-columns: 44px 1fr 44px !important;
-    align-items: center !important;
-    justify-items: center !important;
-    padding: 0 16px !important;
-    height: 64px !important;
     left: 0 !important;
-    right: 0 !important;
-    background: rgba(8, 8, 8, 0.7) !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 24px !important;
+    height: 64px !important;
+    background: rgba(8, 8, 8, 0.75) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     border-bottom: 1px solid var(--glass-border) !important;
   }
   
   .mobile-menu-btn {
-    grid-column: 1 !important;
     display: flex !important;
-    justify-self: start !important;
-    margin-right: 0 !important;
+    align-items: center !important;
+    gap: 8px !important;
     background: transparent !important;
     border: none !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+  }
+  
+  .mobile-menu-btn .menu-text {
+    display: inline-block !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
   }
   
   .topbar__logo {
-    grid-column: 2 !important;
     display: flex !important;
-    justify-self: center !important;
+    justify-content: center !important;
+    align-items: center !important;
+    cursor: pointer !important;
+  }
+  
+  .topbar__actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+  
+  #topbar-profile-trigger {
+    display: none !important;
+  }
+  
+  .topbar__ai-btn {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: var(--glass-bg-1) !important;
+    border: 1px solid var(--glass-border) !important;
+    padding: 6px 14px !important;
+    border-radius: var(--r-pill) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+  }
+  
+  .topbar__ai-btn span {
+    display: inline-block !important;
+  }
+
+  /* Hero Section: Reduced height, poster visible */
+  .hero {
+    height: 50vh !important;
+    min-height: 380px !important;
+    padding: 20px 5% !important;
+  }
+  .hero__layout {
+    grid-template-columns: 1.2fr 0.8fr !important;
+    gap: 24px !important;
+  }
+  .hero__right {
+    display: flex !important;
+  }
+  .hero__poster-wrapper {
+    width: 180px !important;
+  }
+  .hero__title {
+    font-size: 2.2rem !important;
+  }
+
+  /* Carousels: 2–4 cards visible */
+  .card-wrap {
+    flex: 0 0 170px !important;
+    width: 170px !important;
+  }
+
+  /* Modal width: 90% */
+  .cinematic-modal {
+    width: 90% !important;
+    height: 90% !important;
+    border-radius: 24px !important;
+  }
+  
+  .modal-grid {
+    grid-template-columns: 2fr 1fr !important;
+    gap: 30px !important;
+  }
+  
+  /* Similar movies: 3-4 cards */
+  .sim-card {
+    width: 160px !important;
+    flex: 0 0 160px !important;
+  }
+  .sim-poster {
+    height: 240px !important;
+  }
+}
+
+/* ── MOBILE BREAKPOINT (≤ 767px) ─────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Permanent sidebar is completely hidden */
+  .sidebar, .sidebar-backdrop {
+    display: none !important;
+  }
+  
+  .main {
+    margin-left: 0 !important;
+    padding-bottom: 90px !important;
+    padding-top: 70px !important;
+  }
+  
+  .site-footer {
+    margin-left: 0 !important;
+    padding-bottom: 100px !important;
+  }
+
+  /* Topbar spans full width and displays hamburger menu, logo, and AI icon button */
+  .topbar {
+    left: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    height: 60px !important;
+    background: rgba(8, 8, 8, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+  }
+  
+  .mobile-menu-btn {
+    display: flex !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
+  }
+  
+  .mobile-menu-btn .menu-text {
+    display: none !important;
+  }
+  
+  .topbar__logo {
+    display: flex !important;
+    justify-content: center !important;
     align-items: center !important;
   }
   
   .topbar__actions {
-    grid-column: 3 !important;
     display: flex !important;
-    justify-self: end !important;
     align-items: center !important;
-    gap: 0 !important;
+    gap: 12px !important;
   }
   
-  /* Hide unnecessary header elements on mobile to align with requirements */
-  #topbar-profile-trigger,
+  #topbar-profile-trigger {
+    display: none !important;
+  }
+  
   .topbar__ai-btn {
-    display: none !important;
-  }
-  
-  #topbar-search-trigger {
     display: flex !important;
-    background: transparent !important;
-    border: none !important;
-    width: 44px !important;
-    height: 44px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--glass-bg-1) !important;
+    border: 1px solid var(--glass-border) !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
   }
   
-  /* Completely hide the desktop sidebar on mobile to prevent duplicate navigation panels */
-  .sidebar,
-  .sidebar-backdrop {
+  .topbar__ai-btn span {
     display: none !important;
   }
-  
-  /* Layout adjustments for main content without sidebar */
-  .main {
-    margin-left: 0 !important;
-    padding-bottom: 90px !important; /* Bottom-safe spacing for bottom nav */
+
+  /* Hero Section: Vertical Layout */
+  .hero {
+    height: auto !important;
+    min-height: unset !important;
+    padding: 20px 4% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
+  
+  .hero__layout {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    text-align: center !important;
+    justify-items: center !important;
+  }
+  
+  .hero__left {
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+  
+  .hero__right {
+    display: flex !important;
+    justify-content: center !important;
+    order: -1 !important;
+  }
+  
+  .hero__poster-wrapper {
+    width: 160px !important;
+    aspect-ratio: 2/3 !important;
+  }
+  
+  .hero__title {
+    font-size: 1.8rem !important;
+    text-align: center !important;
+  }
+  
+  .hero__desc-container {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+  
+  .hero__desc {
+    font-size: 0.95rem !important;
+  }
+  
+  .hero__btns {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  
+  .hero-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Carousels: 1–2 cards visible */
+  .card-wrap {
+    flex: 0 0 135px !important;
+    width: 135px !important;
+  }
+  
+  /* Movie detail modal: Full Screen */
+  .modal-overlay {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .cinematic-modal {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+  
+  .modal-hero {
+    height: auto !important;
+    min-height: unset !important;
+    padding: 60px 20px 20px 20px !important;
+  }
+  
+  .modal-hero-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 16px !important;
+  }
+  
+  .modal-poster {
+    width: 130px !important;
+  }
+  
+  .modal-title {
+    font-size: 1.8rem !important;
+    text-align: center !important;
+  }
+  
+  .modal-meta-row, .modal-genres, .modal-actions {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .modal-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  
+  .modal-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .modal-body {
+    padding: 20px !important;
+  }
+  
+  .modal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+  
+  /* Similar movies carousel on mobile: horizontal scroll card size */
+  .sim-card {
+    width: 130px !important;
+    flex: 0 0 130px !important;
+  }
+  .sim-poster {
+    height: 195px !important;
+  }
+}
+
+/* ── EDGE-AWARE CARD HOVER EXPANSION CLASSES ─────────────────────────── */
+.card-expand.expand-left-edge {
+  left: 0 !important;
+  right: auto !important;
+  transform: translate(0, -50%) scale(0.92) !important;
+  transform-origin: left center !important;
+}
+.card-wrap:hover .card-expand.expand-left-edge {
+  transform: translate(0, -50%) scale(1) !important;
+}
+
+.card-expand.expand-right-edge {
+  left: auto !important;
+  right: 0 !important;
+  transform: translate(0, -50%) scale(0.92) !important;
+  transform-origin: right center !important;
+}
+.card-wrap:hover .card-expand.expand-right-edge {
+  transform: translate(0, -50%) scale(1) !important;
+}
+
+.card-expand.expand-center {
+  left: 50% !important;
+  right: auto !important;
+  transform: translate(-50%, -50%) scale(0.92) !important;
+  transform-origin: center center !important;
+}
+.card-wrap:hover .card-expand.expand-center {
+  transform: translate(-50%, -50%) scale(1) !important;
 }
 
 /* 3. Storage dashboard and downloading simulator styles */
