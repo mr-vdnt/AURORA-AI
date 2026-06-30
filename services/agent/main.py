@@ -165,6 +165,84 @@ def proxy_events(request: Request, req: EventRequest, current_user: dict = Depen
 from services.agent.admin import admin_router
 app.include_router(admin_router)
 
+# --- SRE KEEP-WARM & HEALTH ENDPOINTS ---
+import asyncio
+import logging
+
+logger = logging.getLogger("streamora.sre")
+
+async def heartbeat_loop():
+    # Delay initial heartbeat run to allow server startup and microservices to boot fully
+    await asyncio.sleep(15)
+    
+    app_url = os.getenv("RENDER_EXTERNAL_URL")
+    if not app_url:
+        origins = os.getenv("ALLOWED_ORIGINS", "")
+        for origin in origins.split(","):
+            if origin.startswith("https://"):
+                app_url = origin
+                break
+    if not app_url:
+        app_url = "http://127.0.0.1:8004"
+        
+    logger.info(f"[SRE Heartbeat] Starting keep-warm loop. Target URL: {app_url}/health")
+    print(f"[SRE Heartbeat] Starting keep-warm loop. Target URL: {app_url}/health")
+    
+    while True:
+        # Wait 10 minutes (600 seconds)
+        await asyncio.sleep(600)
+        url = f"{app_url.rstrip('/')}/health"
+        params = {"heartbeat": "true"}
+        try:
+            resp = requests.get(url, params=params, timeout=10)
+            logger.info(f"[SRE Heartbeat] Ping successful. HTTP status: {resp.status_code}")
+            print(f"[SRE Heartbeat] Ping successful. HTTP status: {resp.status_code}")
+        except Exception as e:
+            logger.error(f"[SRE Heartbeat] Ping failed: {e}. Starting exponential backoff retry...")
+            print(f"[SRE Heartbeat] Ping failed: {e}. Starting exponential backoff retry...")
+            
+            for i in range(3):
+                wait_time = 10 * (2 ** i)
+                logger.info(f"[SRE Heartbeat] Retrying in {wait_time}s...")
+                print(f"[SRE Heartbeat] Retrying in {wait_time}s...")
+                await asyncio.sleep(wait_time)
+                try:
+                    resp = requests.get(url, params=params, timeout=10)
+                    logger.info(f"[SRE Heartbeat] Retry {i+1} successful. HTTP status: {resp.status_code}")
+                    print(f"[SRE Heartbeat] Retry {i+1} successful. HTTP status: {resp.status_code}")
+                    break
+                except Exception as ex:
+                    logger.error(f"[SRE Heartbeat] Retry {i+1} failed: {ex}")
+                    print(f"[SRE Heartbeat] Retry {i+1} failed: {ex}")
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(heartbeat_loop())
+
+@app.get("/ping")
+def ping():
+    return {"status": "pong"}
+
+@app.get("/health")
+def health():
+    services = {
+        "ranking": "http://127.0.0.1:8001/",
+        "event_processor": "http://127.0.0.1:8002/",
+        "rag": "http://127.0.0.1:8003/"
+    }
+    status_report = {}
+    for name, url in services.items():
+        try:
+            r = requests.get(url, timeout=1.5)
+            status_report[name] = "healthy" if r.status_code == 200 else "unhealthy"
+        except Exception:
+            status_report[name] = "unreachable"
+            
+    return {
+        "status": "healthy",
+        "microservices": status_report
+    }
+
 # Mount frontend directory at root
 frontend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../frontend'))
 app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
