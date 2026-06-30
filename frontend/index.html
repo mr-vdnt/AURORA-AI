@@ -153,7 +153,12 @@
                 <div class="modal-hero-gradient"></div>
                 
                 <div class="modal-hero-content">
-                    <a href="#" id="modal-poster-link"><img src="" alt="Poster" class="modal-poster" id="modal-poster"></a>
+                    <a href="#" id="modal-poster-link">
+                        <div class="img-container" style="border-radius: var(--r-md); aspect-ratio: 2/3; width: 150px; height: 225px; overflow: hidden; background: rgba(0,0,0,0.3);">
+                            <div class="img-placeholder"><div class="blur-skeleton"></div></div>
+                            <img src="" alt="Poster" class="modal-poster" id="modal-poster" onload="window.imageLoaded(this)">
+                        </div>
+                    </a>
                     
                     <div class="modal-main-info">
                         <!-- 1. MOVIE TITLE -->

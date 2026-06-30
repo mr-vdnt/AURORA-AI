@@ -32,6 +32,45 @@ const modalOverlay  = document.getElementById('movie-detail-modal');
 const modalBody     = document.getElementById('modal-body');
 const closeModalBtn = document.getElementById('close-modal-btn');
 
+// ── Progressive Image Loading & Error Handlers ───────────────────────
+window.imageLoaded = function(img) {
+    img.classList.add('loaded');
+    const container = img.closest('.img-container');
+    if (container) {
+        const placeholder = container.querySelector('.img-placeholder');
+        if (placeholder) {
+            placeholder.style.opacity = '0';
+            setTimeout(() => {
+                if (placeholder.parentNode) {
+                    placeholder.parentNode.removeChild(placeholder);
+                }
+            }, 400);
+        }
+    }
+};
+
+window.imageLoadError = function(img, title) {
+    img.style.display = 'none';
+    const container = img.closest('.img-container');
+    if (container) {
+        const placeholder = container.querySelector('.img-placeholder');
+        if (placeholder) {
+            placeholder.innerHTML = `
+                <div class="artwork-unavailable">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span class="unavailable-text">Artwork Unavailable</span>
+                    <span class="unavailable-title">${title}</span>
+                </div>
+            `;
+            placeholder.style.opacity = '1';
+        }
+    }
+};
+
 // ── Ambient Blur Backdrop ─────────────────────────────────────────────
 window.updateAmbientBackground = function(imageUrl) {
     const backdrop = document.getElementById('ambient-backdrop');
@@ -2716,10 +2755,16 @@ function createMovieCardHTML(movie) {
     const genres = (m.tags || []).slice(0, 3).map(g => `<span>${g}</span>`).join('');
     const saved = isInMyList(movie.item_id);
 
+    // Escape title to prevent breaks in onerror handler
+    const escapedTitle = t.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
     return `
     <div class="card-wrap" style="cursor: pointer;" onclick="openModal(${movie.item_id})">
         <div class="card-3d" data-id="${movie.item_id}" tabindex="0">
-            <img src="${poster}" alt="${t}" loading="lazy" onerror="this.src='${placeholder(t)}'">
+            <div class="img-container">
+                <div class="img-placeholder"><div class="blur-skeleton"></div></div>
+                <img src="${poster}" alt="${t}" loading="lazy" onload="window.imageLoaded(this)" onerror="window.imageLoadError(this, '${escapedTitle}')">
+            </div>
             <div class="card-3d__badge">${score}%</div>
             <button class="card-heart-btn" data-id="${movie.item_id}" onclick="event.stopPropagation(); window.toggleFavorite(${movie.item_id});" aria-label="${saved ? 'Remove from favorites' : 'Add to favorites'}" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: ${saved ? 'var(--streamora-cyan)' : 'white'}; cursor: pointer; z-index: 5; transition: all var(--t-fast);" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
                 ${saved 
@@ -2730,7 +2775,10 @@ function createMovieCardHTML(movie) {
             <div class="card-3d__glare"></div>
         </div>
         <div class="card-expand">
-            <img src="${backdrop}" class="card-expand__img" alt="" loading="lazy" onerror="this.src='${placeholder(t)}'">
+            <div class="img-container">
+                <div class="img-placeholder"><div class="blur-skeleton"></div></div>
+                <img src="${backdrop}" class="card-expand__img" alt="" loading="lazy" onload="window.imageLoaded(this)" onerror="window.imageLoadError(this, '${escapedTitle}')">
+            </div>
             <div class="card-expand__body">
                 <div class="card-expand__title">${t}</div>
                 <div class="card-expand__meta">
@@ -3284,7 +3332,7 @@ function renderHero(movie) {
 
     heroSection.style.display = 'flex';
     heroSection.innerHTML = `
-        <div class="hero__bg" style="background-image:url('${bg}')"></div>
+        <div class="hero__bg backdrop-loading"></div>
         <div class="hero__overlay"></div>
         <div class="hero__inner">
             <div class="hero__layout">
@@ -3339,7 +3387,10 @@ function renderHero(movie) {
                 <!-- Right Column: Poster with 3D Hover & Play Overlay -->
                 <div class="hero__right">
                     <div class="hero__poster-wrapper" onclick="openModal(${movie.item_id})">
-                        <img src="${poster}" alt="${title}">
+                        <div class="img-container" style="border-radius: var(--r-md); aspect-ratio: 2/3; height: auto;">
+                            <div class="img-placeholder"><div class="blur-skeleton"></div></div>
+                            <img src="${poster}" alt="${title}" loading="lazy" onload="window.imageLoaded(this)" onerror="window.imageLoadError(this, '${title.replace(/'/g, "\\'")}')">
+                        </div>
                         <div class="hero__play-overlay">
                             <div class="hero__play-btn-circle">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -3350,6 +3401,24 @@ function renderHero(movie) {
             </div>
         </div>
     `;
+
+    // Progressive Hero Backdrop Loader
+    setTimeout(() => {
+        const heroBg = heroSection.querySelector('.hero__bg');
+        if (heroBg) {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                heroBg.style.backgroundImage = `url('${bg}')`;
+                heroBg.classList.remove('backdrop-loading');
+                heroBg.classList.add('backdrop-loaded');
+            };
+            tempImg.onerror = () => {
+                heroBg.style.backgroundImage = 'linear-gradient(to bottom, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 1))';
+                heroBg.classList.remove('backdrop-loading');
+            };
+            tempImg.src = bg;
+        }
+    }, 50);
 }
 
 function appendRow(title, movies) {
@@ -3597,8 +3666,40 @@ function renderModalData(m, id) {
     
     const posterUrl = m.poster_url || placeholder(m.title);
     const bgUrl = m.backdrop_url || posterUrl;
-    document.getElementById('modal-poster').src = posterUrl;
-    document.getElementById('modal-backdrop').style.backgroundImage = `url('${bgUrl}')`;
+    const posterImg = document.getElementById('modal-poster');
+    const backdropEl = document.getElementById('modal-backdrop');
+    
+    // Hide until imageLoaded fires
+    posterImg.style.display = 'none';
+    
+    // Add placeholder back to the container if it was removed in previous opens
+    const posterContainer = posterImg.closest('.img-container');
+    if (posterContainer && !posterContainer.querySelector('.img-placeholder')) {
+        const placeholderDiv = document.createElement('div');
+        placeholderDiv.className = 'img-placeholder';
+        placeholderDiv.innerHTML = '<div class="blur-skeleton"></div>';
+        posterContainer.insertBefore(placeholderDiv, posterImg);
+    }
+    
+    posterImg.onerror = () => {
+        posterImg.style.display = 'none';
+        window.imageLoadError(posterImg, m.title || 'Poster');
+    };
+    posterImg.src = posterUrl;
+
+    // Progressive Backdrop Loader
+    backdropEl.classList.add('backdrop-loading');
+    const tempImg = new Image();
+    tempImg.onload = () => {
+        backdropEl.style.backgroundImage = `url('${bgUrl}')`;
+        backdropEl.classList.remove('backdrop-loading');
+        backdropEl.classList.add('backdrop-loaded');
+    };
+    tempImg.onerror = () => {
+        backdropEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 1))';
+        backdropEl.classList.remove('backdrop-loading');
+    };
+    tempImg.src = bgUrl;
     
     const typeLabel = isSeries({ item_id: id, rich_metadata: m, title: m.title }) ? 'TV Series' : 'Movie';
     document.getElementById('modal-match').innerHTML = `${m.match_percentage || 85}% Match <span style="margin-left: 8px; padding: 2px 6px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 4px; color: var(--streamora-cyan); font-size: 0.8rem; font-weight: 700; display: inline-block;">${typeLabel}</span>`;

@@ -202,14 +202,38 @@ def rank(request: RankRequest):
     # Build results and sort by ranking score (higher = better)
     results = []
     for cid, r_score, rk_score in zip(candidate_ids, retrieval_scores, rank_scores):
-        title = ""
-        movie_genres = ""
+        c_director = ""
+        c_cast = set()
+        c_writer = ""
+        c_themes = set()
+        c_moods = set()
+        c_studio = ""
+        c_lang = ""
+        c_country = ""
+        c_franchise = "None"
+        c_year = 2022
+        import re
+
         if movies_df is not None:
             row = movies_df[movies_df['item_id'] == cid]
             if not row.empty:
-                title = row.iloc[0]['title']
-                if 'genres' in row.columns:
-                    movie_genres = row.iloc[0]['genres']
+                r_data = row.iloc[0]
+                title = r_data.get('title', '')
+                movie_genres = r_data.get('genres', '')
+                c_director = str(r_data.get('director', ''))
+                c_cast = set(str(r_data.get('cast', '')).split(', '))
+                c_writer = str(r_data.get('writer', ''))
+                c_themes = set(str(r_data.get('themes', '')).split('|'))
+                c_moods = set(str(r_data.get('moods', '')).split('|'))
+                c_studio = str(r_data.get('studio', ''))
+                c_lang = str(r_data.get('language', ''))
+                c_country = str(r_data.get('countries', ''))
+                c_franchise = str(r_data.get('franchise', 'None'))
+                
+                # Extract year from title
+                year_match = re.search(r'\((\d{4})\)', title)
+                if year_match:
+                    c_year = int(year_match.group(1))
                     
         # Real-time score adjustments
         rt_boost = 0.0
@@ -220,7 +244,55 @@ def rank(request: RankRequest):
                 if g in top_genres:
                     rt_boost += top_genres[g] * 0.5  # 50% of the genre score as boost
                     
-        # 2. Recent items penalty: don't recommend what they just interacted with
+        # 2. Advanced Multi-Signal Overlaps with user's recently watched items
+        if recent_items and movies_df is not None:
+            # Look up top 5 recent items metadata
+            recent_rows = movies_df[movies_df['item_id'].isin(recent_items[:5])]
+            for _, r_rec in recent_rows.iterrows():
+                # Director overlap
+                if c_director and c_director == r_rec.get('director', ''):
+                    rt_boost += 1.5
+                # Writer overlap
+                if c_writer and c_writer == r_rec.get('writer', ''):
+                    rt_boost += 1.0
+                # Studio overlap
+                if c_studio and c_studio == r_rec.get('studio', ''):
+                    rt_boost += 0.8
+                # Language similarity
+                if c_lang and c_lang == r_rec.get('language', ''):
+                    rt_boost += 0.5
+                # Country similarity
+                if c_country and c_country == r_rec.get('countries', ''):
+                    rt_boost += 0.5
+                # Era / Year similarity (within 5 years)
+                try:
+                    r_rec_title = r_rec.get('title', '')
+                    r_year_match = re.search(r'\((\d{4})\)', r_rec_title)
+                    r_year = int(r_year_match.group(1)) if r_year_match else 2022
+                    if abs(c_year - r_year) <= 5:
+                        rt_boost += 0.3
+                except Exception:
+                    pass
+                # Cast overlap
+                r_cast = set(str(r_rec.get('cast', '')).split(', '))
+                cast_intersect = c_cast.intersection(r_cast)
+                if cast_intersect:
+                    rt_boost += len(cast_intersect) * 0.6
+                # Themes overlap
+                r_themes = set(str(r_rec.get('themes', '')).split('|'))
+                theme_intersect = c_themes.intersection(r_themes)
+                if theme_intersect:
+                    rt_boost += len(theme_intersect) * 0.8
+                # Moods overlap
+                r_moods = set(str(r_rec.get('moods', '')).split('|'))
+                mood_intersect = c_moods.intersection(r_moods)
+                if mood_intersect:
+                    rt_boost += len(mood_intersect) * 0.8
+                # Franchise overlap
+                if c_franchise != 'None' and c_franchise == r_rec.get('franchise', ''):
+                    rt_boost += 2.0
+                    
+        # 3. Recent items penalty: don't recommend what they just interacted with
         if cid in recent_items:
             rt_boost -= 10.0
             
